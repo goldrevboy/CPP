@@ -1,0 +1,19 @@
+A semantic error is an error in meaning. These occur when a statement is 
+syntactically valid, but either violates other rules of the language, or does not do what the programmer intended.
+print without initialisation n divide by 0 often happen on initialisation or just gives the the wrong result
+
+
+std::cerr is unbuffered
+
+
+C++ contains an output stream named std::clog that is intended to be used for writing logging information. 
+However, by default, std::clog writes to the standard error stream (the same as std::cerr). And while you can redirect it to file instead, 
+this is one area where you’re generally better off using one of the many existing third-party logging tools available. Which one you use is up to you.
+
+for integrated debugging enable the debugging mode in tasks.json
+
+std::cout << std::unitbuf; // enable automatic flushing for std::cout (for debugging)
+
+for unbuffering std:: cout - std::cout << std::unitbuf; // enable automatic flushing for std::cout (for debugging)
+
+

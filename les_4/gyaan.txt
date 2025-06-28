@@ -1,0 +1,144 @@
+The integral types are bool, the various char types, and the standard integer types.
+
+
+VOID 
+void value; // won't work, variables can't be defined with incomplete type void
+mostly usd for fxns which dont return a value
+
+int getValue(void) // void here means no parameters,,, dont use it though
+
+
+/// sizes
+Instead, the standard says the following:
+
+    An object must occupy at least 1 byte (so that each object has a distinct memory address).
+    A byte must be at least 8 bits.
+    The integral types char, short, int, long, and long long have a minimum size of 8, 16, 16, 32, and 64 bits respectively.
+    char and char8_t are exactly 1 byte (at least 8 bits).
+
+
+#include <iomanip> // for std::setw (which sets the width of the subsequent output) cout << this << next thing
+
+on my machine
+A byte is 8 bits
+
+bool:           1 bytes
+char:           1 bytes
+short:          2 bytes
+int:            4 bytes
+long:           8 bytes
+long long:      8 bytes
+float:          4 bytes
+double:         8 bytes
+long double:    16 bytes
+
+sizeof(void) gives compile error
+
+
+Ezoic
+
+Therefore, assigning value 140 to an 8-bit signed integer will result in undefined behavior.
+
+If an arithmetic operation (such as addition or multiplication) attempts to create a value outside 
+the range that can be represented, this is called integer overflow (or arithmetic overflow). For signed integers, integer overflow will result in undefined behavior.
+
+// unsigned 
+unsigned short us;
+unsigned int ui;
+
+1 byte unsiged stores 0 to 255 while signed stores -128 to 127
+10000000 is - 128
+if 280 wants to be stored in unsigned 280 %256 ie 24
+
+unexpected behavior can result when you mix signed and unsigned integers. In C++, if a mathematical operation 
+(e.g. arithmetic or comparison) has one signed integer and one unsigned integer, the signed integer will usually be converted to an unsigned integer
+
+
+most integers have compiler dependent size greater than some maximum capacity eg for int its 2 as capacity and 4 is often used on modern architectures
+
+so C++11 introduced fixed sized ints in <cstdint>
+
+eg uint8_t , int64_t
+uint8_t and int8_t behave like unsigned and signed chars 
+
+    std::int8_t x { 65 };   // initialize 8-bit integral type with value 65
+    std::cout << x << '\n'; // You're probably expecting this to print 65   but prints A 
+
+The fixed-width integers actually don’t define new types -- they are just aliases for existing integral types with the desired size.
+For each fixed-width type, the implementation (the compiler and standard library) gets to determine which existing type is aliased. 
+As an example, on a platform where int is 32-bits, std::int32_t will be an alias for int. On a system where int is 16-bits (and long is 32-bits), 
+std::int32_t will be an alias for long instead.
+
+So what about the 8-bit fixed-width types?
+
+In most cases, std::int8_t is an alias for signed char because it is the only available 8-bit signed integral type (bool and char are not 
+considered to be signed integral types). And when this is the case, std::int8_t will behave just like a char on that platform.
+
+However, in rare cases, if a platform has an implementation-specific 8-bit signed integral type, the implementation may decide to make 
+std::int8_t an alias for that type instead. In that case, std::int8_t will behave like that type, which may be more like an int than a char.
+
+std::uint8_t behaves similarly.
+
+these can only be used if repspective aliases exist
+
+The fast types (std::int_fast#_t and std::uint_fast#_t) provide the fastest signed/unsigned integer type with a width of at least # bits 
+(where # = 8, 16, 32, or 64). For example, std::int_fast32_t will give you the fastest signed integer type that’s at least 32-bits. 
+By fastest, we mean the integral type that can be processed most quickly by the CPU.
+
+Prefer std::uint#_t when doing bit manipulation or well-defined wrap-around behavior is required (e.g. for cryptography or random number generation).
+
+The answer is that sizeof returns a value of type std::size_t. std::size_t is an alias for an implementation-defined unsigned integral type. 
+In other words, the compiler decides if std::size_t is an unsigned int, an unsigned long, an unsigned long long, etc… 
+std::size_t is actually a typedef. ........... #include <cstddef>  // for std::size_t
+
+scientific notation is 5e4 for 5 * 10^4
+
+Here’s the most important thing to understand about scientific notation: The digits in the significand (the part before the ‘e’) are called the 
+significant digits (or significant figures). The more significant digits, the more precise a number
+
+while converting decimals to scientific form don't trim trailing zeros but For numbers with no decimal point, trailing zeros are considered to be insignificant by default.
+
+
+FLOATS////////
+
+f suffix used to denote type float
+
+    std::cout << 5.0 << '\n';           prints 5
+	std::cout << 6.7f << '\n';          prints 6.7
+	std::cout << 9876543.21 << '\n';    prints9.87654e06
+
+
+The precision of a floating point type defines how many significant digits it can represent without information loss.
+depends on both the size (floats have less precision than doubles) 
+and the particular value being stored (some values can be represented more precisely than others).
+
+std::cout has a default precision of 6
+
+to over ride this 
+#include <iomanip> // for output manipulator std::setprecision()
+    std::cout << std::setprecision(17); // show 17 digits of precision
+    // now print anything
+
+
+BOOL - default initialize to false
+ use std::cout << std::boolalpha or std::cin >> std::boolalpha for using true n false rather than 0 -1
+
+if (x) means “if x is non-zero/non-empty”.
+
+ascii chart - https://en.cppreference.com/w/cpp/language/ascii.html
+One simple way to address this is to use the std::cin.get() function to perform the extraction instead, as this function does not ignore leading whitespace:
+
+Unicode standard, which maps over 144,000 integers to characters in many different languages. 
+Because Unicode contains so many code points, a single Unicode code point needs 32-bits to represent a character (called UTF-32).
+However, Unicode characters can also be encoded using multiple 16-bit or 8-bit characters (called UTF-16 and UTF-8 respectively).
+
+// type conversion
+
+The type conversion process does not modify the value (or object) supplying the data to be converted. 
+Instead, the conversion process uses that data as input, and produces the converted result.
+
+implicit casting 
+static_cast<int>(5.5)
+static_cast<type>(expression)
+
+
