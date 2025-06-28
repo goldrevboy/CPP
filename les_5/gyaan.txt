@@ -1,0 +1,67 @@
+// Constants
+add const before declaration
+const double g; // will throw error it must be initialised... can be initialised from non const variables
+can also be used for fxn parameters although pretty pointless to be used wit return values
+type qualifier changes how type behaves... const is also a qualifier
+opp of const is volatile
+
+literal constants - "strings_like_these"
+If the default type of a literal is not as desired, you can change the type of a literal by adding a suffix. Here are some of the more common suffixes:
+5.0 is type double not float for float vasting better to use 5.0f to avoid prevision issues. scientifiv are also double by default
+All C-style string literals have an implicit null terminator. \0 at the end. "Hello, world!" has type const char[14]
+C-style string literals are const objects that are created at the start of the program and are guaranteed to exist for the entirety of the program.
+
+To use an octal literal, prefix your literal with a 0 (zero):
+To use a hexadecimal literal, prefix your literal with 0x: (use capital A,B,C for hexadecimal)
+hexadecimal values are often used to represent memory addresses or raw data in memory (whose type isn’t known). one can use 0b for binary literals
+' used as digit separator,  use std:: oct,dec,hex for printing in req format 
+#include <bitset> // for std::bitset
+std::bitset<8> bin1{ 0b1100'0101 }; // binary literal for binary 1100 0101
+std::cout << std::bitset<4>{ 0b1010 } << '\n'; // create a temporary std::bitset and print it    
+
+for c++20 n 23 -- > use <format> and <print> respectively
+    std::cout << std::format("{:b}\n", 0b1010);  // C++20, {:b} formats the argument as binary digits
+    std::cout << std::format("{:#b}\n", 0b1010); // C++20, {:#b} formats the argument as 0b-prefixed binary digits
+
+    std::println("{:b} {:#b}", 0b1010, 0b1010);  // C++23, format/print two arguments (same as above) and a newline
+
+optimisations--- compile time expression evaluation
+Constant propagation is an optimization technique where the compiler replaces variables known to have constant values with their values. 
+Using constant propagation, the compiler would realize that x always has the constant value 7, and replace any use of variable x with the value 7
+
+// const expression
+
+"constant expression”, which is an expression that must be evaluatable at compile-time,
+const non integral types can't be used in const expressions
+a constexpr variable must be initialized with a constant expression, otherwise a compilation error will result.
+used just like const
+
+#include<string> for strings
+std::string is the type
+    std::getline(std::cin >> std::ws, name); // read a full line of text into name , ws to ginore whitespaces
+    when std::getline() goes to extract text to name, it sees "\n" is already waiting in std::cin, and figures we must have previously entered an empty string! Definitely not what was intended.
+    string_name.length() // to be static casted to int for use
+    std::ssize(name) also works n results std::ptrdiff_t type
+    returning string is okay since it follows move semantics
+
+using namespace std::string_literals; // easy access to the s suffix
+
+    std::cout << "foo\n";   // no suffix is a C-style string literal
+    std::cout << "goo\n"s;  // s suffix is a std::string literal
+
+//// string view in <string_view> header
+provides read only access to the string while using this no copies are made since everything is referenced
+can be initialised from c style string(literal) , std::string or string_view itself
+cant be implicitly convert to std::string but we can use explicit conversion
+one can add sv at the end of string_view literals
+can be used as constexpr
+
+std::string keeps the assigned c style string in a separate memory block whereas the string_view refer the same block
+cant initialise string_view by a string return type
+Modifying a std::string is likely to invalidate all views into that std::string.
+First, because C-style string literals exist for the entire program, it’s fine (and useful) to return C-style string literals from a function that has a return type of std::string_view.
+Second, it is generally okay to return a function parameter of type std::string_view:
+
+string view fxns 
+    The remove_prefix() member function removes characters from the left side of the view.
+    The remove_suffix() member function removes characters from the right side of the view.
