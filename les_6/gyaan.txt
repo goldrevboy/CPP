@@ -11,6 +11,10 @@ condition ? expression1 : expression2;
 std::tostring() converts integers to string
 comp of floating points best done using epsilon method
 
-short circuiting  strict Left to Right
+short circuiting  strict Left to right
 Similarly, if the left operand for logical OR is true, then the entire OR condition has to evaluate to true, and the right operand won’t be evaluated.
 if left operand false in AND then right not evaluated ( problematic for stuff like ++ and --)
+AND has higher pref than OR
+!= can act as LOGICAL XOR
+
+
