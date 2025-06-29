@@ -1,0 +1,99 @@
+just ::function_name refers to global namespace
+
+compilerfirst checks within current namespace if name is not found then checks global
+even the declaration must be placed in the respective namespace
+declaration can be made in one namespace across multiple files
+
+namespace nesting is allowed 
+namespace Foo::Goo // Goo is a namespace inside the Foo namespace (C++17 style)
+    namespace Active = Foo::Goo; // active now refers to Foo::Goo
+
+local variables have a block scope
+Unlike local variables, which are uninitialized by default, variables with static duration are zero-initialized by default.
+
+An identifier with internal linkage can be seen and used within a single translation unit, but it is not accessible from other translation units. 
+This means that if two source files have identically named identifiers with internal linkage, those identifiers will be treated as independent
+
+why const variables have internal linkage by default: “Because const objects can be used as compile-time values in C++, 
+this feature urges programmers to provide explicit initializer values for each const. This feature allows the user to put 
+const objects in header files that are included in many compilation units.”
+
+const and constexpr are internally linked by default but for other types you can use static keyword
+
+external linkage can be seen and used both from the file in which it is defined, and from other code files (via a forward declaration). 
+
+    int g_x { 2 }; // non-constant globals are external by default (no need to use extern)
+
+    extern const int g_y { 3 }; // const globals can be defined as extern, making them external
+    extern constexpr int g_z { 3 }; // constexpr globals can be defined as extern, making them external (but this is pretty useless, see the warning in the next section)
+
+
+To actually use an external global variable that has been defined in another file, you also must place a forward declaration for 
+the global variable in any other files wishing to use the variable(no initialization value)
+extern int g_x;       // this extern is a forward declaration of a variable named g_x that is defined somewhere else
+extern const int g_y; // this extern is a forward declaration of a const variable named g_y that is defined somewhere else
+
+Although constexpr variables can be given external linkage via the extern keyword, they can not be forward declared as constexpr.
+However, you can forward declare a constexpr variable as const, which the compiler will treat as a runtime const. This isn’t particularly useful.
+
+Avoid initializing objects with static duration using other objects with static duration from a different translation unit.
+Dynamic initialization of global variables is also susceptible to initialization order issues and should be avoided whenever possible.
+
+basically if an externally linked variable is initialised with another function then since all the processing happens before main the function may 
+or may not have been initialised by the time the global variable tries to get initialised
+
+every function call has certain performance overhead because of call stack
+typically more significant in smaller fxns
+
+what c++ sometimes does is replaces these small fxns with their inline versions at compile time- inline expansion each fxn falls in maybe or can't category
+Larger executables tend to be slower (due to not fitting as well in memory caches).
+
+one can use inline keyword infront of fxn to tell compiler it is better to expand it inline( now not used)
+now inline is used for multiple things
+
+an inline function is one that is allowed to be defined in multiple translation units (without violating the ODR).
+
+
+    The compiler needs to be able to see the full definition of an inline function in each translation unit where the function is used (
+        a forward declaration will not suffice on its own). Only one such definition can occur per translation unit, otherwise a compilation error will occur.
+    The definition can occur after the point of use if a forward declaration is also provided. However, the compiler will likely not 
+    be able to perform inline expansion until it has seen the definition (so any uses between the declaration and definition will probably not be candidates for inline expansion).
+    Every definition for an inline function (with external linkage, which functions have by default) must be identical, otherwise undefined behavior will result.
+
+Notice that both files have a definition for function pi() -- however, because this function has been marked as inline, this is acceptable, and the linker will de-duplicate them.
+
+
+as per earlier system A function defined in another translation unit can’t be inline expanded in the current translation unit being compiled.
+
+verry veryy imp - nline functions are typically defined in header files, where they can be #included into the top of any code file that needs to see the full definition of the identifier. This ensures that all inline definitions for an identifier are identical.
+
+The following functions are implicitly inline:
+
+    Functions defined inside a class, struct, or union type definition (14.3 -- Member functions).
+    Constexpr / consteval functions (F.1 -- Constexpr functions).
+    Functions implicitly instantiated from function templates (11.7 -- Function template instantiation).
+
+you can use inline varibles too in c++17 onwards
+
+best way to use constexpr across different files is to put them in a  header as inline ( they'll be evalueated once anyway because of inline optimisation)
+
+
+when static applied to a local variable
+Using the static keyword on a local variable changes its duration from automatic duration to static duration. This means the variable is now created at the start of the program, and destroyed at the end of the program (just like a global variable). As a result, the static variable will retain its value even after it goes out of scope!
+although it can only be used inside the scope but it's value will be retained. they are only initialised once
+they also be made const or constexpr
+
+A qualified name is a name that includes an associated scope. Most often, names are qualified with a namespace using the scope resolution operator (::). For example:
+An unqualified name is a name that does not include a scoping qualifier. For example, cout and x are unqualified names, as they do not include an associated scope.
+
+one of using unqualifed name as an alias for qualified one 
+using std::cout; // this using declaration tells the compiler that cout should resolve to std::cout
+   cout << "Hello world!\n"; // so no std:: prefix is needed here!
+
+if some fxns with same name but little difference compiler prefers the one that takes less type conversion and stuff
+
+Unnamed namespaces are typically used when you have a lot of content that you want to ensure stays local to a given translation unit, as it’s easier to cluster such content in a single unnamed namespace than individually mark all declarations as static. 
+
+An inline namespace is a namespace that is typically used to version content. Much like an unnamed namespace, anything declared inside an inline namespace is considered part of the parent namespace. However, unlike unnamed namespaces, inline namespaces don’t affect linkage.
+
+
