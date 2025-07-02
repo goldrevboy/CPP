@@ -1,0 +1,86 @@
+The answer is that an else-statement is paired up with the last unmatched if-statement in the same block. 
+Thus, in the program above, the else-statement is matched up with the inner if-statement, as if the program had been written like this:
+
+; - null statement
+x = 0 in if condition - x = 0 first assigns the value 0 to x, then evaluates to the value of x
+
+///constexpr if statements which can be evaluated at compile time
+if constexpr(smtg)
+this smtg must be a constant expression
+
+switch case
+switch (expression){
+    case 1:
+        stuff
+        break; // if not broken it'll follow through
+    .
+    .
+    default:
+        stuff
+
+}
+// the so called stuff is not in nested scope and variables declared in one can be used by the other
+// condition in a switch must evaluate to an integral type or an enumerated type or be convertible to one of the above
+Expressions that evaluate to floating point types, strings, and most other non-integral types may not be used here.
+
+When a switch expression matches a case label or optional default label, execution begins at the first statement following the matching label. Execution will then continue sequentially until one of the following termination conditions happens:
+
+    The end of the switch block is reached.
+    Another control flow statement (typically a break or return) causes the switch block or function to exit.
+    Something else interrupts the normal flow of the program (e.g. the OS shuts)
+
+match ke baad ka sab execute hoga 
+
+Attributes are a modern C++ feature that allows the programmer to provide the compiler with some additional data about the code.
+[[fallthrough]
+
+    case 2:
+        std::cout << 2 << '\n'; // Execution begins here
+        [[fallthrough]]; // intentional fallthrough -- note the semicolon to indicate the null statements]
+
+examples of legals
+defining some variable at somepoint will be availble anywhere else in the scope of switch
+but it is illegal to initialize them upon declaration
+this all happens if you are not putting variables in blocks
+
+goto statements
+you add a statement label like tryAgain: before some point of code
+and you can do goto tryAgain; then the control jumps to the label 
+every label must have a statement( null possibly)
+Statement labels utilize a third kind of scope: function scope, which means the label is visible throughout the function even before its point of declaration. 
+you cant jump from fxmn to fxn and cant jump over initialization i the scope of label
+
+, can be used in for init and increment
+
+halts like exit are functions 
+Normal termination means the program has exited in an expected way. std::exit causes normal termination
+std::exit does alot of garbage collecting and cleaning....doesn't do local variable cleanup ... std::atexit takes a fxn as argument which does the local cleanup
+explicity called after return of main .... it returns the argument it takes to the operating system as status code
+atexit fxn should be void with no parameters , would b ecalled if main returns and can refgister multipple fxns but processed in reversed order of registering
+careful for threads this cleans static ojects(Might be used by others) so use std::quick_exit
+
+std::abort() terminates prog abnormally and does no clean up indicating some runtime issue , std::terminate used when exception not handled(calls std::abort only)
+
+<random> includes PRNGS(pseudo rand no. generators) takes seed to set internal states 
+mersenne twister famous algo -- mt19937 and mt19937_64(for 64 bit unsigned)
+std::mt19937 mt{}; --- cout << mt() <<endl;
+rndm numbers in range like 1 to 6
+
+std::uniform_int_distribution die6{ 1, 6 };  .... convert the output of prng into som e sort of distribution
+die6(mt)... prints a randm no between 1 and 6
+
+// Seed our Mersenne Twister using steady_clock
+	std::mt19937 mt{ static_cast<std::mt19937::result_type>(
+		std::chrono::steady_clock::now().time_since_epoch().count()
+		) };   /// seeding with time
+
+can also seed mt with std::random_device{}() OS dependent  rndm seed      The () then calls operator() on that temporary object
+
+mT requires 19937 bits (2493 bytes), which is 624 32-bit values or 312 64-bit values.
+integers allocated by std::mt19937 are defined to be of type std::uint_fast32_t, which could be 32-bit or 64-bit integers depending on the architecture.
+std::seed_seq will generate as many additional unbiased seed values as needed to initialize a PRNG’s state. 
+
+std::random_device rd{};
+	std::seed_seq ss{ rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd() }; // get 8 integers of random numbers from std::random_device for our seed
+
+

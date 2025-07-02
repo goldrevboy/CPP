@@ -1,0 +1,46 @@
+Using a function’s name without calling it generally yields a function pointer holding the address of the function. 
+Such a function pointer will implicitly convert to a bool value. And since this pointer should never have address 0, that bool value will always be true.
+
+exceptions
+
+The basic idea is that when an error occurs, an exception is “thrown”. If the current function does not “catch” the error, the caller of the function has a 
+chance to catch the error. If the caller does not catch the error, the caller’s caller has a chance to catch the error. The error progressively moves up the 
+call stack until it is either caught and handled (at which point execution continues normally), 
+or until main() fails to handle the error (at which point the program is terminated with an exception error).
+
+CLEANING INPUT BUFFER FOR ERROR HNADLING std::cin.ignore(100, '\n');  // clear up to 100 characters out of the buffer, or until a '\n' character is removed
+
+FOR ENTIRE USE THIS std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+bool hasUnextractedInput()
+{
+    return !std::cin.eof() && std::cin.peek() != '\n';
+}         /// checking for unextracted input
+
+
+if (std::cin.fail()) // If the previous extraction failed
+{
+    // Let's handle the failure
+    std::cin.clear(); // Put us back in 'normal' operation mode
+    ignoreLine();     // And remove the bad input
+}       /// extraction failure
+
+
+In C++, EOF is an error state, not a character. Different OSes have special character combinations that are treated as a 
+“user-entered EOF request”. These are sometimes called “EOF characters”.
+
+// foroverflow during extraction std::cin goes immediately into “failure mode”, but also assigns the closest in-range value to the variable.
+
+An assertion is an expression that will be true unless there is a bug in the program. If the expression evaluates to true, the assertion 
+statement does nothing. If the conditional expression evaluates to false, an error message is displayed and the program is terminated (via std::abort). 
+std::abort does less or no cleanup so better for debugging
+
+assert(gravity > 0.0);    // found in #include <cassert>
+assert(found && "Car could not be found in database"); // better readibility
+#define NDEBUG // disable asserts (must be placed before any #includes)
+A static_assert is an assertion that is checked at compile-time rather than at runtime, with a failing static_assert causing a compile error.
+static_assert(condition, diagnostic_message)
+
+
+
+
