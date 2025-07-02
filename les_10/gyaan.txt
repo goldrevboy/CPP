@@ -1,0 +1,87 @@
+Implicit type conversion (also called automatic type conversion or coercion) is performed automatically by the compiler when an 
+expression of some type is supplied in a context where some other type is expected. 
+
+cpp only provides the minimum size of each tpe. This variability was allowed 
+so that the int and double data types could be set to the size that maximizes performance on a given architecture
+
+A numeric promotion is the type conversion of certain narrower numeric types 
+(such as a char) to certain wider numeric types (typically int or double) that can be processed efficiently..(all numeric conv are value preserving)
+
+float can be conv to double
+    signed char or signed short can be converted to int.
+    unsigned char, char8_t, and unsigned short can be converted to int if int can hold the entire range of the type, or unsigned int otherwise.
+    If char is signed by default, it follows the signed char conversion rules above. If it is unsigned by default, it follows the unsigned char conversion rules above.
+    bool can be converted to int, with false becoming 0 and true becoming 1.
+
+if we do another conversion say int to long then that doesb't necessarily mean its integral type(numeric promotion only those who increase efficiency)
+
+by default decimal is double... in numeric conv(int to any type, double to float types, double to int, int to double, int/float to bool)
+ An unsafe conversion is one where at least one value of the source type cannot be converted into an equal value of the destination type.
+
+ Reinterpretive conversions: unsafe conv where value is Reinterpreted(eg signed to unsigned) but data is not lost
+ lossy conversion eg. double to int (some precision\data is lost)
+
+if int n double same sized then its a lossy conversion
+
+When the source value of a narrowing conversion is constexpr, the specific value to be converted must be known to the compiler. In such cases, 
+the compiler can perform the conversion itself, and then check whether the value was preserved. If the value was not preserved, the compiler 
+can halt compilation with an error.
+
+Even more strangely, conversions from a constexpr floating point type to a narrower floating point type are not considered narrowing even when there is a loss of precision!
+{} initialization only omits narrow conversions(listed explicity in 10.4)
+
+    long double (highest rank)
+    double
+    float
+    long long
+    long
+    int (lowest rank)  conv order in arithmetic conversion in arithmetic expression evaluation
+
+first integral promotion happens
+The special matching rules for integral operands with different signs:
+
+    If the rank of the unsigned operand is greater than or equal to the rank of the signed operand, the signed operand is converted to the type of the unsigned operand.
+    If the type of the signed operand can represent all the values of the type of the unsigned operand, the type of the unsigned operand is converted to the type of the signed operand.
+    Otherwise both operands are converted to the corresponding unsigned type of the signed operand.
+
+std::common_type_t<int, double> returns the common type of int and double, and std::common_type_t<unsigned int, long> returns the common type of unsigned int and long
+
+wxplicit casts ... const_cast (add or remove const) and reinterpret_cast(reinterprets bits as new type) are not safeh
+ave static_cast (does compile time casting) and dynamic_cast does runtime cast both are safe
+C style cast (double)x /y  in c++ we can do fxn style cast too double(x) /y
+
+There is one thing you can do with a C-style cast that you can’t do with C++ casts: C-style casts can convert a derived object to a base class that is inaccessible (e.g. because it was privately inherited).
+Static casting a value to another type of value returns a temporary object that has been direct-initialized with the converted value.
+
+
+static_cast<int>(x), which returns a temporary int object direct-initialized with x.
+int { x }, which creates a temporary int object direct-list-initialized with x
+
+typedef and aliases
+
+using name = datatype; creates an alias
+
+An alias does not actually define a new, distinct type (one that is considered separate from other types) -- it just introduces a new identifier for an existing type. A type alias is completely interchangeable with the aliased type.
+typedef datatype name;
+
+we can use auto keyword to specify type if we want the same type as said literal or object
+but this drops const 
+
+using namespace std::literals; // easiest way to access the s and sv suffixes
+
+    auto s1 { "goo"s };  // "goo"s is a std::string literal, so s1 will be deduced as a std::string
+    auto s2 { "moo"sv }; // "moo"sv is a std::string_view literal, so s2 will be deduced as a std::string_view
+    else it'll be char *
+
+you cant have one fxn return 2 types using auto
+
+uf you are using auto as return type then in declaration the return type must be specified 
+you can do one more thing
+auto fxn_name(argd) -> return_type{} also keep the notation consistent in defn and declaration
+
+auto cant be used for fxn parameters
+
+if the return type is argument dependent then one can use auto keyword
+std::common_type_t<decltype(x), decltype(y)> add(int x, double y);         // Compile error: compiler hasn't seen definitions of x and y yet
+auto add(int x, double y) -> std::common_type_t<decltype(x), decltype(y)>; // ok
+
