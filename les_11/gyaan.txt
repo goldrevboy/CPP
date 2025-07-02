@@ -1,0 +1,131 @@
+fxn overloading a llows us to create multiple functions with the same name, so long as each identically named function 
+has different parameter types (or the functions can be otherwise differentiated). 
+
+int add(int x, int y); and double add(double x, double y); are 2 diff overloads
+
+If an overloaded function is not differentiated, or if a function call to an overloaded function can not be resolved to an overloaded function, then a compile error will result.
+# and types of arguements are used for differntiation while return type is not!! (typedefs or aliases cant be used for distinction )
+
+Type signature of a fxn include its name , parameters , no of parameters and function level qualifiers(?? ) but not its return type
+
+if a fxn call is made with some data types as parameters the compiler matches it to those with said parameter types
+but what if add(int) and add(double )  are there and we call add('a') becoz 'a' is a char and can be converted to both int and double
+
+It iterates through multiple steps and tries to find a match if no match is found at end then compilation error
+1. exact match ( in its substep it can also try conversions like lvalue to rvalue, non-const to const , non ref to ref)
+2. Aplly numeric promotions and then try to match
+3. Apply numeric conversions
+4. apply user defined conversions ???
+5. check for matching fxn that uses ellipses ??
+6. issue compiler error
+if at any point we get 2 matching fxns then   give CE
+
+
+matching for fxns with multiple parameter
+If there are multiple arguments, the compiler applies the matching rules to each argument in turn. The function chosen is the one for which each argument 
+matches at least as well as all the other functions, with at least one argument matching better than all the other functions. In other words, the function c
+hosen must provide a better match than all the other candidate functions for at least one parameter, and no worse for all of the other parameters.
+
+void printInt(char) = delete; // calls to this function will halt compilation 
+if you have printInt(int) and you only want the int to be used nothing else then use this
+if i waaannaaaaaaa delete asll other than int 
+// This function template will take precedence for arguments of other types-- for int the original will taje priority
+// Since this function template is deleted, calls to it will halt compilation
+template <typename T>
+void printInt(T x) = delete;
+
+if at any step a deleted fxn is selected then CE
+
+providing default arguements ,  void print(int x, int y=4) , print(3) makes  = 4 and print(3,2) makes y =2  // only = can be used for init not {} ans ()
+
+if multiple default and caller gives some of them then we take the rightmost left ones as defaults   even in declaration thre should be no def to the left of non default
+
+defaults must be added in declaration( dec + def happen together then can add) ....smbiguity in overloading with defaults causes a CE
+
+TEMPLATES
+
+one can define a template and the compiler can generate as many overloads as used
+Templates can work with types that didn’t even exist when the template was written. This helps make template code both flexible and future proof!
+
+The initial function template that is used to generate other functions is called the primary template, and the functions generated from 
+the primary template are called instantiated functions.
+
+placeholder types (technically called type template parameters, informally called template types)
+    Type template parameters (where the template parameter represents a type).
+    Non-type template parameters (where the template parameter represents a constexpr value).
+    Template template parameters (where the template parameter represents a template).
+
+template <typename T> // this is the template parameter declaration defining T as a type template parameter
+T max(T x, T y){
+    return (x>y)?x:y;    
+}
+
+we specify all of the template parameters that our template will use inside angled brackets (<>). 
+For each type template parameter, we use the keyword typename (preferred) or class, followed by the name of the type template parameter (e.g. T).
+
+one can instantiate like max<int>(2,3)  this creates an instance where int is used rather than teh template T
+it generates another fxn named max<int> at compile time which looks like template<> int max<int>(int a, int b)
+note : one can just call max(1,2) or max<>(1,2) and compiler will automatically initialise an int based max(you have to be precise will giving the values)
+also a normal fxn call will prefer a non template fxn over a template instance if  both are equally likely ... if u use <> non template are not considered
+
+template parameters can be used selectively 
+template <typename T>
+int someFcn(T, double) // these can also pass default args
+{
+    return 5;
+}
+
+deleting an instance of the template
+template <>
+const char* addOne(const char* x) = delete;
+
+The answer is simple: type conversion is done only when resolving function overloads, not when performing template argument deduction.
+if the typename is not specified only then the compiler does arguement deduction
+
+this is a good practice to use when dealing with multiple type arguements std::common_type_t<T, U>;\
+
+C++20 introduces a new use of the auto keyword: When the auto keyword is used as a parameter type in a normal function, the compiler will automatically 
+convert the function into a function template with each auto parameter becoming an independent template type parameter. This method for creating a function 
+template is called an abbreviated function template.
+auto max(auto x, auto y)
+{
+    return (x < y) ? y : x;
+}  is eqv to a 2 arguement template with auto return type
+
+if there is overloading in template like one addd with same data types and one with different it'll prefer the one with same
+
+The rules for determining which of multiple matching function templates should be preferred are called “partial ordering of function templates”. 
+In short, whichever function template is more restrictive/specialized will be preferred. add<T>(T, T) is the more restrictive function template in this 
+case (since it only has one template parameter), so it is preferred.
+
+If multiple function templates can match a call and the compiler can’t determine which is more restrictive, the compiler will error with an ambiguous ma
+
+
+A non-type template parameter is a template parameter with a fixed type that serves as a placeholder for a constexpr value passed in as a template argument.
+
+A non-type template parameter can be any of the following types:
+
+    An integral type
+    An enumeration type
+    std::nullptr_t
+    A floating point type (since C++20)
+    A pointer or reference to an object
+    A pointer or reference to a function
+    A pointer or reference to a member function
+    A literal class type (since C++20)
+
+eg of non type template parameter would be bitset<8> va;ue given must be constexpr!!!
+you can use static_assert to throw error at compile time rather than going to runtime
+
+some implicit conversions like integeral promotion/conversion, user defined and lvalue ravlue are allowed
+
+one can use auto N as well
+
+
+for multi file use just put the template in the header and use it 
+The ODR says that types, templates, inline functions, and inline variables are allowed to have identical definitions in different files. 
+So there is no problem if the template definition is copied into multiple files (as long as each definition is identical). // it will laso probably be optimised to be used once only
+
+functions implicitly instantiated from templates are """"implicitly inline."""" And as you know, inline functions can be defined in multiple files, so long as the definition is identical in each.
+
+
