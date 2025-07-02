@@ -39,7 +39,7 @@ assert(gravity > 0.0);    // found in #include <cassert>
 assert(found && "Car could not be found in database"); // better readibility
 #define NDEBUG // disable asserts (must be placed before any #includes)
 A static_assert is an assertion that is checked at compile-time rather than at runtime, with a failing static_assert causing a compile error.
-static_assert(condition, diagnostic_message)
+static_assert(condition, diagnostic_message)   // condn must be a cnstexpr
 
 
 
