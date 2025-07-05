@@ -17,6 +17,11 @@ if(N>0) std::cout << "positive" << std::endl;
 // else if(N<0) std::cout << "negative" << std::endl;
 // else std::cout << "zero" << std::endl;
 }
+
+constexpr int xo(int x){
+    return x+1;
+}
+
 int main() {
     
     int a = 5, b = 10;
@@ -24,5 +29,6 @@ int main() {
     std::cout << add<int>(a,c) << std::endl; // Output: 15
     std::cout << add(a,b) << std::endl; // Output: 15
     // prt<a>(); // throuws an error
+    std::cout << xo(a) << std::endl;
     return 0;
 }

@@ -1,0 +1,38 @@
+Cant use ordinary fxn calls in const expressions 
+When a function call is evaluated at compile-time, the compiler will calculate the return value of the function call at compile-time, 
+and then replace the function call with the return value.
+
+to be able to evaluated at compile time 
+    The call to the constexpr function must have arguments that are known at compile time (e.g. are constant expressions).
+    All statements and expressions within the constexpr function must be evaluatable at compile-time.
+    // there is some less known criteria too https://en.cppreference.com/w/cpp/language/constexpr.html
+
+constexpr fxns can also be used at run time
+
+why at compile time ?
+- performance : faster run-time
+- reliability : compile time doesn't do random behaviour and hence catches errors easily
+compiler is actually free to choose whether to eval at compile time or not
+constexpr fxns whene used in compile time cant call non constexpr fxns 
+(const can be written in front of fxn but will be ignored)
+
+The parameters of a constexpr function are not implicitly constexpr, nor may they be declared as constexpr.
+so you can use them for just giving a value by doing expressions but cant be used explicity where a const expression is required
+
+Because such parameters are not constexpr, they cannot be used in constant expressions within the function.( if you wanna use constexpr parameters use non type templates)
+constexpr fxns are inline. 
+
+actual requirement for the forward declaration of constexpr functions that are evaluated at compile-time is that 
+“the constexpr function must be defined prior to the outermost evaluation that eventually results in the invocation”.
+ this means that if a fxn is used in another fxn then it doesnt need to be defined before its use in the fxn but should be defined before the first call to the outer fxn.
+
+consteval in C++20 onwards is a stricter form of constexpr.Fxn must be compile time evaluatable and must be evaluated at compile time else CE is thrown.
+
+std::is_constant_evaluated() (defined in the <type_traits> header) returns a bool indicating whether the current function is executing in a constant-evaluated context. 
+A constant-evaluated context (also called a constant context) is defined as one in which a constant expression is required (such as the initialization of a constexpr variable).
+if consteval does the same thing
+
+Within a constexpr or consteval function, we can use local variables that are not constexpr, and the value of these variables can be changed.
+a constexpr fxn can pass its argument (non-const) to another fxn of type constexpr inside it
+
+constexpr can call non constexpr if not being used at Compile time
