@@ -1,0 +1,148 @@
+C++ supports the following compound types:
+
+    Functions
+    C-style Arrays
+    Pointer types:
+        Pointer to object
+        Pointer to function
+    Pointer to member types:
+        Pointer to data member
+        Pointer to member function
+    Reference types:
+        L-value references
+        R-value references
+    Enumerated types:
+        Unscoped enumerations
+        Scoped enumerations
+    Class types:
+        Structs
+        Classes
+        Unions
+
+expression has 2 things type and value category
+type is the data type returned
+
+L-value - left value or locator value is an expression that evaluates to an identifiable object or fxn or (bit field)
+
+An entity (such as an object or function) that has an identity can be differentiated from other similar entities (typically by comparing the addresses of the entity).
+Entities with identities can be accessed via an identifier, reference, or pointer, and typically have a lifetime longer than a single expression or statement.
+
+R value - right value
+is an expression that is not an lvalue. Rvalue expressions evaluate to a value. Commonly seen rvalues include literals (except C-style string literals, which are 
+lvalues) and the return value of functions and operators that return by value. Rvalues aren’t identifiable (meaning they have to be used immediately), and only 
+exist within the scope of the expression in which they are used.
+
+x+1 is right value , func_call(), ordinary expressions
+anything that is a temporary object/ value which is not stored in a locator is a rvalue 
+Unless otherwise specified, operators expect their operands to be rvalues
+= demands its left expression to be a modifiable lvalue where as 
+
+in case when an rvalue is expected and lvalue is provided lvalue-to-rvalue conversion takes place, lvalue is expecte to produce its value which is an rvalue
+rvalue cant implicitly be converted to lvalue
+
+Lvalue expressions are those that evaluate to functions or identifiable objects (including variables) that persist beyond the end of the expression.
+
+x++ is an rvalue while ++x is an lvalue
+srd::strings are an rvalue but c styeled strings are lvalue as they decompose to a pointer
+
+
+// REFERENCE //
+ reference is an alias for an existing object. Once a reference has been defined, any operation on the reference is applied to the object being referenced. 
+ This means we can use a reference to read or modify the object being referenced.
+
+
+modern c++ has 2 types of reference lvalue reference and rvalue reference
+lvalue reference acts as an alias to the lvalue being referenced
+int& is an alias of int type object
+An lvalue reference variable is a variable that acts as a reference to an lvalue (usually another variable).
+int& b = a; now a and b can be used interchangeably
+
+we can also use a non const reference to modify the value of the references abject
+b = 10; makes a = 10;
+
+references must be initialised
+
+A reference will (usually) only bind to an object matching its referenced type ( some exceptions to be studied in inheritence)
+const lvalue references can be bound to literals. // temporary object is created
+
+once initialiased a reference cant be changed
+with one exception : references can die before referent object and vice a versa can also happen
+if referent dies first - > dangling reference, Accessing a dangling reference leads to undefined behavior.
+references are not objects !!!
+they cant be used when a reference is req like cant take reference of reference
+
+int a = 10;
+const int& b = a; // allowed but you cant edit a through b but you can edit a through a
+
+// if const int&(gr) and gr is short or long but not int then a temprory object is associated with reference
+When a const lvalue reference is directly bound to a temporary object, the lifetime of the temporary object is extended to match the lifetime of the reference.
+only when directly bound to a temprory object , temporaries returned from fxn are not elgiible for lifetime extension
+
+When applied to a reference, constexpr allows the reference to be used in a constant expression. (but can be bound only to global/static locals) ( constexpr and 
+const both need to be pplied for binding to const referent)
+
+passing fxn parameters by ref is a good way to save wasted copying space n time this also allows to change the value of arguement
+&variabl_name gives its address
+
+passing by const int& (cons lvalue reference) lets you use without copying and reduces the risk of change in value
+if type doesnt match a temporary object is created
+With pass by reference, ensure the type of the argument matches the type of the reference, or it will result in an unexpected (and possibly expensive) conversion.
+1 disadvantage of pass by reference is that when copy is made it is stored in register or RAM making it a quick access whereas reference would require additional access
+compiler can sometimes optimize code that uses pass by value more effectively than code that uses pass by reference
+
+string_view >> string &  (except in older C++ and when null character is somehow needed) also in avg case string_view gurantees faster type converion between strings
+
+/// POINTERS ////
+For objects that use more than one byte of memory, address-of will return the memory address of the first byte used by the object.
+*(mem address) gives value at that address * is dereference operator
+int* is a pointer to an int value (holds the address of an integer value)
+if uninitialized hold garbage value however int* ptr{}; holds NULL pointer
+
+assignment of ptrs can be used to - change the object being pointer to or change the value in pointed object
+pointers are objects, can point to nothing , pretty dangerous (differ from reference)
+&x doesnt return an address as address literals not supported but results an int* pointer containing the address of x....32 bit mem - > 4 byte pointer (64 - > 8)
+if the location where the ptr points gets destroyed or freed then it is a dangling pointer
+
+nullptr doesnt point to any value , dereferencing leads to undefined behavior ... if(ptr) results true if not null (not initialiased gives not null)
+0 and NULL also mean nullptr
+
+only const int* can point to const int ... but a const int* can point to an int object but cannot change it.... const int* cant change the object in any case
+int * const means that the pointer will be bound to only 1 address and that can not be changed... whether that value can be changed or not depends on const keyword before int
+
+pass by address fun(const std::string *ptr)... we can also assert(ptr) for null check 
+>>> you cant take address of rvalues !!!
+we can also pass pointers as reference int*& x now x is an alias for whatever pointer was provided 
+null ptr has type std::nullptr_t
+
+while return by references declare variable using static keyword... const outputs can only be handled by const vars
+
+Avoid returning references to non-const local static variables.
+
+If a function returns a reference, and that reference is used to initialize or assign to a non-reference variable, 
+the return value will be copied (as if it had been returned by value).
+
+When an argument for a const reference parameter is an rvalue, it’s still okay to return that parameter by const reference.
+if max(a,b) returns non const reference then one can do max(a,b) = 7;
+
+IN n output
+
+Parameters that are used only for receiving input from the caller are sometimes called in parameters.
+A function parameter that is used only for the purpose of returning information back to the caller is called an out parameter. eg non const ref
+Unnamed temporaries only bind to const references.
+
+/// type deduction///
+In addition to dropping const, type deduction will also drop references. auto it {rf};if rf is int& then it is now int but it can be reapplied auto& it {rf};
+when const applies to the object itself then its a top level const else if it applies to object being references like const int& or const int* it is low level const
+auto does not drop low level references
+in deduction of const int& reference dropped first now const int is top level so const dropped
+if reference is dropped and reapplied then low level const will not be dropped so auto & and const auto & is same for const int&
+constexpr addition to name allows use in another constexpr and is applied on the reference not the object
+
+auto* kp ; and auto kp; is same if being assigned to a pointer  { auto * must be initialised with a pointer obj}
+only top level const dropped with ptrs too
+const auto const is not allowed but const auto* const is allowed   by auto keyword const is applied to the object so const auto in case of ptrs will make auto* const 
+
+std::optional<T> can either have a value of type T or not we can return {}; in case of such fxns and it will eval to false in if(returned_value)
+.has_value() is used to check of such variable has a value or not can get value by *var or var.value()
+
+
