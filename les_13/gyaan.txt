@@ -1,0 +1,116 @@
+struct Fraction{ int num{}, denom{}; }; 
+Fraction f{1,2};
+structs can be put in a header file and included across files (no ODR violation) , all of the type definitions for a given type must be identical, otherwise undefined behavior will result.
+
+enum is a data type whose value is restricted to a set of constants
+enum color{red,green,blue, };
+
+if unscoped these enums can cause a lot of collisions like maybe two names defined in 2 enums 
+better option is to put enums in a namespace ... enums can also be put inside fxns
+in an enum each value is associated with an integral type (0 indexed from the start of enlisting)
+this is also allowed 
+enum Animal
+{
+    cat = -3,    // values can be negative
+    dog,         // -2
+    pig,         // -1
+    horse = 5,
+    giraffe = 5, // shares same value as horse
+    chicken,     // 6
+}; ... Animal a{}; initialiased to 0 , by default initialiased to 0;
+
+enumeration size is dependent on the underlying type(BASE) mainly int but can be changed like          enum cats : std::uint8_t{}; (note can cause to pritn like char)
+cat c1 {2}; // error but cat c1 {static_cast<cat>(2)}; // no error
+but if you explicity specify the base you can do cat c1{2}; (only with brace initialization)
+Since enumerators are constexpr, their values must also be constexpr.
+
+C-style string literals exist for entire program so it is okay to return a string_view
+for string to enum and back changes you need switch cases or if else no smarter way (actually there is its operator overloading)
+
+std::ostream& operator<< (std::ostream& out, Color color){
+                ^ this is the name of fxn
+    out << getcolor(color); // prints the necessary string
+    return out; // this operator returns it's left hand side operand in this case the output stream
+
+    could also do --- return out << getcolor(color);
+}
+so this operator follows a different / overloaded implementation for Color enum
+similar for instream just use istream and take care of valid or invalid input n entering failed state
+if(red==banana) can eval true as they are comp as integers
+
+///// Scoped Enum /////
+enum class Color{red,blue,green,};                           // enum struct does the same thing .... keyword class is heavily overloaded
+differences red can only by accessed inside Color like Color::red 
+also they have no integers related with them   // cant print them normally , cant copare different enums 
+can be explicitly be converted to int by static_cast or use std::to_underlying(color) (C++23 onwards) does a 0 based numbering 
+can also static_cast integers to enum values and can also be initiliased from Color c{1}; // alowed withoput specifying base
+
+one can overload unary operator to give the int version of enumration
+using enum Color; now brings the scope of the enum to the block or scope(C++ 20 onwards)
+
+///// STRUCTS ///////
+struct is a class type so anything that applies to class applies to struct 
+In C++, a member is a variable, function, or type that belongs to a struct (or class). All members must be declared within the struct (or class) definition.
+Employee joe{}; joe.age = 4;
+struct ^
+
+In C++, a member is a variable, function, or type that belongs to a struct (or class). All members must be declared within the struct (or class) definition.
+defn of aggregate is quite compicated : https://en.cppreference.com/w/cpp/language/aggregate_initialization
+arrasys , class types{ with no constructor, no pvt or protected non static data members , no virtual fxns}
+= {1,2,3}; copy list initiliaser,     var {1,2,3}; list initialization
+post C++ 20 we can do some () 
+we can just do obj{}; for default value initialisation of members, also values are given left to right(imp if not all are given)
+
+std::ostream& operator<<(std::ostream& out, const Employee& e)       // operator overloading to print a struct
+{
+    out << e.id << ' ' << e.age << ' ' << e.wage;
+    return out;
+}
+
+structs can be const and constexpr  
+designated initialisation Foo f{ .a{2}, .c{7} , .b{2} };  // order sjhould match the order of declaration in struct
+struct can also be assigned using initialiser lists , even this is valid oe = { .id = joe.id, .age = 33, .wage = 66000.0 };
+structs can be passed by value bot for initialisation and assignment .... basic initiliasation of members happen even if object not initialised
+if {} is used it value initialises uninitialized members
+
+we can pass temporary object by reference printEmployee({ 15, 28, 18.27 }); /// as a struct 
+but since this is an rvalue it can only be taken by pass by value or pass by const ref  --> this is for passing arguements not returning 
+returning struct by value , struct constructed copied and destroyed at the end of expression
+
+we want our structs (and classes) to be owners. The easiest way to enable this is to ensure each data member has an owning type (e.g. not a viewer, pointer, or reference).
+
+size of struct is often padded as per the longest data structure available
+
+if ptr is a pointer to a struct having a then to access this member you can use either 
+ptr->a or (*ptr).a
+
+types cant be overloaded !!
+
+writing class/struct as templates
+template <typename T>
+struct Pair{ T first{}; T second{}; }
+
+
+Class Template arguement Deduction <CTAD> deducing template type from the data given
+eg pair p{1,2}; means its a pair of <int,int> ... only happens if template arguements absent
+template <typename T, typename U>
+Pair(T, U) -> Pair<T, U>;  //// this is a deduction guide for CTAD
+C++20 added the ability for the compiler to automatically generate deduction guides for aggregates, so deduction guides should only need to be provided for C++17 compatibility.
+
+if in the first part we write template< typename T=int> then this is a default type
+p<double> will eval to double , p{2} will use deduction guid , Pair p3; this will be assigned to the default
+
+CTAD doesnt work with non static member initialisation
+CTAD cant be used given as fxn parameters    void print(std::pair p) this doesnt work  // for this just use a template
+
+template <typename T>
+using Coord = Pair<T>; // Coord is an alias for Pair<T>   Alias template   you still have to use <T> in coord
+    Coord<int> p1 { 1, 2 }; // Pre C++-20: We must explicitly specify all type template argument
+    Coord p2 { 1, 2 };      // In C++20, we can use alias template deduction to deduce the template arguments in cases where CTAD works
+
+First, unlike normal type aliases (which can be defined inside a block), alias templates must be defined in the global scope (as all templates must).
+
+fxn calls must be done like this 
+template <typename T>
+void print(const Coord<T>& c){}  // cant exempt <T>
+
