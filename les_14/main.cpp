@@ -14,7 +14,7 @@ public:
 
 int main(){
     cp c1 {2,3};
-    cp(c2);
+    // cp(c2);
     std::cout << "Size of cp: " << sizeof(c1) << std::endl;
     return 0;
 }
