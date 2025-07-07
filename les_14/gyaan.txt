@@ -1,0 +1,134 @@
+a class invariant is a condition that must be true throughout the lifetime of an object in order for the object to remain in a valid state.
+
+object has both data and functionality and it is member of a class
+you can define member functions in struct too  & call them just like methods
+size of empty struct 1
+Member functions can also be (forward) declared inside the class definition, and defined after the class definition.
+void kisses(const Person& person)
+    {
+        std::cout << name << " kisses " << person.name << '\n';
+    }    // this is also valid one person method is given another person as a parameter
+
+non -mem fxns must be declared before they are used. inside a class definition, this restriction doesn’t apply
+although the initialisation happens in the order of writing so if used for initialisation then declare the fxn before
+fxn declared later would work but variable declared later wont work
+what compilers do with member fxns is that they forward declare them as they come and add their definition just after the end of the class so as to avoid any violations
+mem fxns can be overloaded
+structs can have constructors but if they do then they wont be aggregates( aggregates are basically list initialisation walle log braces walle)
+
+if you declare a const struct then you cant access non const members
+const member are not those who have const return type but is the property of fxn thta its doesn't change anything  eg void print() const{};
+constructors need not be const , const fxns cant call non const mem fxns but can call outside fxns as long as they dont change the member variables
+
+you can pass a const reference to a function which can call any fxn and it'll ensure that the const is applied rather than declaring original objec as const
+const and normal fxns are considered different and hance can be overloaded(first pref to non const)
+
+public access specifier , thesse can be used by any anything inside or outside the class 
+struct members are by default public   but the members of a class are private by default.... use structs when aggregation suff and no invariant, cleanup needed
+Private members are members of a class type that can only be accessed by other members of the same class.
+cant brace initialise a class , use private: and public: for access specifying
+
+aggregates cant have non-static private member
+// if I have a public mem fxn of class A and a and b are 2 objects of A if I pass b as a reference to a's publix fxn then that fxn can access the private data of b
+since they are of same class
+
+getters - public mem fxns that return a pvt mem (accessors)  - > return by value or const lvalue reference
+setters - public mem fxns that take in and change the value of a pvt mem (mutators)
+
+returning non const reference of pvt members is stupid and avoided (however technically it is allowed)
+const member fxns can't return non const reference
+
+In programming, the term {{{{{{encapsulation}}}}}} typically refers to one of two things:
+
+    The enclosing of one or more items within a container of some kind.
+    The bundling of data and functions for operating on instances of that data.
+
+sometimes one can use non mem fxns to increase encapsulation (expects extra support from class maintainer)
+A constructor is a special member function that is automatically called after a non-aggregate class type object is created.
+    If an accessible matching constructor is found, memory for the object is allocated, and then the constructor function is called.
+    If no accessible matching constructor can be found, a compilation error will be generated.
+Constructor has same name as that of the class. For template classes, this name excludes the template parameters.
+member initializer lists
+Foo(int x, int y)
+    : m_x { x }, m_y { y } // here's our member initialization list
+
+the members in a member initializer list are always initialized in the order in which they are defined inside the class
+use member initializer list as assignment can have strange behaviours.
+
+one can use both {} as well as () for initialisation and the rules are similar to normal variables or you can use nothing if you have a default constructor
+
+NOTE : constructors can be overloaded
+you can have both Foo(){} and Foo(int x, int y): m_x{x}, m_y {y} {}    to initialise in different ways
+
+If a non-aggregate class type object has no user-declared constructors, the compiler will generate a public default constructor 
+Foo() = default; // generates an explicitly defaulted default constructor .... useful if an implicit consturctor has been written
+
+But initialization of a class object is finished once the member initializer list has finished executing. // can't do contructor inside constructor
+one can use default values to convert multiple constructors into one
+
+Constructors are allowed to delegate (transfer responsibility for) initialization to another constructor from the same class type. This process is sometimes 
+called constructor chaining and such constructors are called delegating constructors.
+to do this call the constructor in member initialisation list
+
+Employee(std::string_view name)
+        : Employee{ name, 0 } // delegate initialization to Employee(std::string_view, int) constructor
+    {
+    }
+
+pass temporary class objects
+print(IntPair { 5, 6 } );
+print({5,6}); implicit conversion
+
+Foo() is similar to Foo {} ie temporary object
+Foo bar() // declaration of function bar that has no parameters and returns a Foo (inconsistent with `Foo bar{}` and `Foo()`)
+
+Foo(1);    // Function-style cast of literal 1, returns temporary Foo (similar to `Foo { 1 }`)
+Foo(bar);  // Defines variable bar of type Foo (inconsistent with `Foo { bar }` and `Foo(1)`) similar to Foo bar;
+
+Foo * bar();  - > fxn bar which returns Foo* <- same as Foo (* bar());
+Foo (*bar)(); - > defines a function pointer named bar that holds the address of a function that takes no parameters and returns a Foo.
+(Foo * ) bar(); just does c styled typecast
+
+when used in an expression, a temporary class object is an rvalue
+NOTE : string_view doesnt implicity convert to string
+
+A copy constructor is a constructor that is used to initialize an object with an existing object of the same type. After the copy constructor 
+executes, the newly created object should be a copy of the object passed in as the initializer.
+
+if not provided c++ will create a public implicit copy constructor for you
+A (const A& it) : m_x{it.m_x} , m_y{it.m_y} {}        // argument must be an lvalue ref (pref const)
+keep copy constructor only for copying cause compiler optimises it out
+pass by value and return by value work using copy constructor
+one can use default same as that for constructor = default
+you can also do = delete if you dont want any copy to be able to be deleted
+
+Copy initialization only considers non-explicit constructors/conversion functions. 
+List initialization prioritizes matching list constructors over other matching constructors. 
+in a constructor member initializer list, we can only use direct forms of initialization, not copy initialization
+Copy elision is a compiler optimization technique that allows the compiler to remove unnecessary copying of objects.
+it is allowed to do so even if copy constructor has side effects
+
+implicit type conversion from some type to user defined type
+
+if you pass a C-style string which converts to string view which copy initiliases an obj A 
+then it can not happen since only one user defined conversion is allowed in implicit conversion
+whereas printEmployee(Employee{ "Joe" }); <- this wont give any error as later part is explicit conversion
+
+Making a constructor explicit has two notable consequences:
+
+    An explicit constructor cannot be used to do copy initialization or copy list initialization.
+    An explicit constructor cannot be used to do implicit conversions (since this uses copy initialization or copy list initialization)
+ensures that if Class A object is required then only that is given nothing else
+can still support () and {} initialisation
+static_cast returns an object that is direct-initialized, so it will consider explicit constructors while performing the conversion:
+static_cast can be used with explicit
+while returning you cant implicity convert initialiser lists eg no return {1}; is allowed now
+
+you can add constexpr to mem fxns too
+aggregates can be made constexpr
+
+classes which have a constexpr constructor can be constexpr{even if non aggregate}
+mem fxns post C++ 14 need not be const and you need to explicitly specify const
+
+
+
