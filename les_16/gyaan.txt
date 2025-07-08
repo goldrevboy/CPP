@@ -1,0 +1,71 @@
+Container is  a data type which provides efficient storage for its elements
+std::vector and std::array don't qualify as container from C++ standards but are container classes
+// note vector must also implement list constructor lets you construct from a list of values
+vector<int> v{1,2,3,4}; is a valid initialisation
+also for fixed size initialisation it is important to do vector<int> v(10);
+doing vector<int> v{10}; would initialise a vector which is of legnth 1 and has element 10
+
+direct initialisation using() is disallowed in members       We must use either copy initialization or list initialization (direct or copy). and CTAD is not allowed
+inside a class you cant do this -> std::vector<int> v(8);
+but you can do                  -> std::vector<int> v{ std::vector<int>(8) }; // ok
+const vector must be initialised and then cant be modified     ( can't modify members they are individually const and cant change the size)
+vector<const int> not allowed 
+>>>> vector cant be made const but std::array can be (good for performance of shrot lengths)
+
+sign change is narrowing which is prohibited by {} init ... C++ size defined as unsigned
+However, if the value to be sign converted is constexpr and can be converted to an equivalent value in the opposing type, 
+the sign conversion is not considered to be narrowing.
+a constexpr can then be made to convert to differnt unisgned types as the compiler can guarantee that the conversion is safe, or halt the compilation process.
+all container classes generally contain a typedef size_type which is alias used for length
+size_type is almost always an alias for std::size_t (can be overridden though)
+
+this size type is related to how memory is allocated most (execpt std::array ) use std::allocator which leads to default size of size_t
+.size() for size , in C++17 we can also use std::size(obj) -> returns size_t  { can also be used on C styled arrays}
+C++20 uses std::ssize() non mem which returns the ength as a large signed integral type (usually std::ptrdiff_t, 
+which is the type normally used as the signed counterpart to std::size_t):
+operator[] does not do bounds checking. -> it'll just lead to undefined behaviour but v.at(index) does bound checking and throws exception if invalid both accept non const types
+
+if non-constexpr int is narrow converted to size_t, it will show warning 
+v.data()[unsigned int] also works since v.data() returns underlying c styled array
+CTAD can infer the fevtor type at initiliasation but not at function passing
+
+copy semantics refers to the rules that determine how copies of objects are made
+copy semantics are typically implemented via the copy constructor (and copy assignment operator)
+copy semantics are not optimal at the time of return by value
+
+we use move semantics which is essentially that the value inside the fxn being returned persists
+and is not destroyed but rather its ownership is transfered to wherever it is passed; ... actually that memory of placeholder is destroyed but not the data associated with it
+condition for invoking of move semantics
+    The type of the object supports move semantics.
+    The object is being initialized with (or assigned) an rvalue (temporary) object of the same type.
+    The move isn’t elided.
+
+if I wanna make a type vector<T> then I have to specify typename keyword like typename vector<T>
+
+std::ptrdiff_t is good for signed usage as it is counter part of size_t
+
+Range based loops for(element declaration : container){} ...... better to use auto&                For reverse just use std::views::reverse(container)
+these dont work with enumerations and c styled arrays as they need the length in advance....
+
+one can use arr[A::a] =10; where A is an enum and a is an enumerator  can change underlying type of A to unsigned to avoid 
+for less clutery type changes just overload the unary + to do type change
+
+v.resize(n); resizes the vector and adds default inits if increased and preservs rest
+realloc procedure
+    The std::vector acquires new memory with capacity for the desired number of elements. These elements are value-initialized.
+    The elements in the old memory are copied (or moved, if possible) into the new memory. The old memory is then returned to the system.
+    The capacity and length of the std::vector are set to the new values.
+
+v.capacity(); returns the max size poss at that instance
+v.shrink_to_fit() changes the capacity to match length
+pb , po ... use.back() to access last element ,emplace_back() is efficient version of push_back()
+
+The reserve() member function can be used to reallocate a std::vector without changing the current length.
+just changes the capacity... remember .size() gives length not capacity
+if the obj to be pushed already exists then pb should be preferred
+pb cant use explicit constructors but emplace_back can .... also if temp object being pushed then eb is just better 
+eb doesn't create a temporary object it just calls the contructor 
+
+
+std::vector<bool> is not a vector (it is not required to be contiguous in memory), nor does it hold bool values (it holds a collection of bits), nor does it meet C++’s definition of a container
+std::vector<bool> has a fairly high amount of overhead

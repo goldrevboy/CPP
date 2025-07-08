@@ -1,0 +1,110 @@
+std::array< type , size > - declaration
+this size has to be a constexpr size is a non -type template .. can have 0 length -> size 0
+it is also an aggregate ... supports CTAD /// doesnt support partial ommision
+A std::array will default initialize members if no initializers are provided. This will leave elements of most types uninitialized.
+actually a template struct ...... UZ is a type suffix for std::size_t
+length and indices of std::array are also size_type(gen dflt to size_t)         ......... also supports at()
+since [] and at dont give constexpr one can use   std::get<index>(arr);   -> can be used for static asserts 
+when used as fxn parameter or return type must specify type n size
+
+generic fxns ... 
+template <typename T, std::size_t N> Foo(std::array<T,N>& a){}
+Not capable of Move   , return by value is expensive  { if you are returning by value you are prolly not doing constexpr so just use vectors}
+
+can use for complex datatypes like class types , struct , ptrs
+when working with struct cant do this
+
+constexpr std::array<House, 3> houses { // initializer for houses
+    { 13, 1, 7 }, // initializer for C-style array member with implementation_defined_name   -> think that this is the initlializer for the entire array
+    { 14, 2, 5 }, // ? 
+    { 15, 2, 4 }  // ?
+};
+you can add extra braces in normal list initialisation too but they are omitted by brace elision
+but you can dd extra set of braces and it;ll be okay
+{{ 13, 1, 7 },{ 14, 2, 5 },{ 15, 2, 4 } } now the entire thing is the initiliaser for the underlying array  
+
+you cannot make array of references since they are not obj
+functional header provides std::reference_wrapper which takes in type T and acts as an object containing the reference
+operator= reseats the referenece , you cant use .get() to get &T the reference this can be used to change the values of referenced obj
+
+std::ref(obj) -> reference_wrapper
+cref gives reference_wrapper<const type>
+make array pf names of enumerations which can be called by the enumerations as indexes yayyy
+cant use range based loops for enums... can make an array of enums inside the namespace and then use auto to traverse through it
+
+
+////////////C STYLED ARRAYS //////////
+type name[length] {};       -> length must be const expr
+the length must be at least 1.
+C-style arrays dynamically allocated on the heap are allowed to have length 0.
+in some compilers non constexpr length are allowed but shouldnt be used in C++ (VLA - variable length arrays C99)
+
+cstyled arrays can tak any integral type and unscoped enumerations for indexing
+during initialization if more members than size are provided then error , if less then rest are value initialised
+cstyled arrays can deduce length of initialiser is given but never type
+
+sizeof(arr) -> length * sizeof(type)  --- for size use std::size() in C++ 17 and std::ssize() in c++20
+array reassignment not avlble cant do arr = {1,2,3}
+
+when a C-style array is used in an expression, the array will be implicitly converted into a pointer to the element type, initialized with the address 
+of the first element (with index 0). Colloquially, this is called array decay (or just decay for short).
+
+In C++, there are a few common cases where an C-style array doesn’t decay:
+    When used as an argument to sizeof() or typeid().
+    When taking the address of the array using operator&.
+    When passed as a member of a class type.
+    When passed by reference.
+
+decayed pointer is not same as array.. pointer doesnt have the infor about the length where as the array does
+Subscripting a C-style array actually applies operator[] to the decayed pointer
+use int arr[] for taking an input
+C styled arrays can have -ve subscript  can also be used for range based for loops
+
+///C styled strings
+char str[]{"hello"}
+c style string literals decay to const char* and c styled strings to char * 
+When outputting a C-style string, std::cout outputs characters until it encounters the null terminator.  -> decayed strings can also be printed
+print( char * ch) { cout << ch << endl;} -> this works fine
+better to take string input as   -> cin.getline(rolls, std::size(rolls));       ... because C++ 20 has changed operator>> overloading for string to prevent overflow 
+but now decayed strings cant be inputed using that
+
+
+std::size(str)  -> works for char array but not decayed pointers (also includes null char in length)      -> can use strlen() works on decayed ptrs too and excludes terminator
+strcpy(), strncpy(), strcpy_s() -- overwrites one C-style string with another
+strcat(), strncat() -- Appends one C-style string to the end of another
+strcmp(), strncmp() -- Compares two C-style strings (returns 0 if equal)
+
+const char name[] { "Alex" };        // case 1: const C-style string initialized with C-style string literal
+const char* const color{ "Orange" }; // case 2: const pointer to C-style string literal
+
+Case 1 puts string in Read only memory block, allocates 5 length memory for name and initializes it with "Alex" -> getting 2 copies of string
+case 2 is implementation defined but what usually happens is compiler places string "Orange" in read only block and initializes color with the address of it
+
+auto s1{ "Alex" };  // type deduced as const char*
+auto* s2{ "Alex" }; // type deduced as const char*
+auto& s3{ "Alex" }; // type deduced as const char(&)[5]       ....     reference to const char[5] array
+
+std::cout << (char * ptr) -> prints string
+std::cout << static_cast<const void*>(ptr) << '\n'; // print address held by ptr
+
+////////
+int a[2][3]; gives a 2D array
+An initialized multidimensional array can omit (only) the leftmost length specification:
+
+Note that std::array is implemented as a single-dimensional array. So the first question you should ask is, “is there a standard library class for 
+multidimensional arrays?” And the answer is… no. Too bad. Womp womp.
+
+to create 2d array of std::array you need to create and std::array<std::array<int,5>,3>  eqv to int a[3][5]
+
+best thing to do is just make alias template <typename T, std::size_t Row, std::size_t Col>
+using Array2d = std::array<std::array<T, Col>, Row>;
+
+in C++ 23
+std::mdspan is a modifiable view that provides a multidimensional array interface for a contiguous sequence of elements. By modifiable view, we mean that 
+a std::mdspan is not just a read-only view (like std::string_view) -- if the underlying sequence of elements is non-const, those elements can be modified.
+
+basically pass 1D array and elements to access it as multidimensional
+but it must have an underlying array
+
+
+
