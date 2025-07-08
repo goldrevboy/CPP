@@ -1,0 +1,84 @@
+Inside every member function, the keyword this is a const pointer that holds the address of the current implicit object.
+b.setId(5); is converted to Foo::setId(&b,5); where the first part is assigned to this pointer
+and fxn call changes to 
+static void setId(Foo* const this, int id) { this->m_id = id; }
+
+if we make fxns like Foo&add(int val){m_x+=val;return this*;}
+then we can do ob.add(4).add(5).add(-9); since ob.add(4) return ob only so it becomes ob.add(5).add(-9)   // mathod chaining
+
+to reset just do *this = {}; this uses default constructor to copy and assign
+when a fxn is declared const then it takes the arguement """"const Foo* const this """"
+
+one can implement mem fxns outside class but must use Foo::name_of_the_function and can proceed like before
+types are exempted from ODR
+
+member fxns defined inside the class means it is inline if defined outside then it is not
+
+you can define types inside types(nested types),      Nested type names must be fully defined before they can be used, so they are usually defined first.
+Foo::Goo  Goo is the enum and Foo::goobby1 <- this is an enumeration(unscoped case)
+if alias inside class ... using fint = int; then outside class use Foo::fint  (if public)
+one can define a class inside a class but the inside class can't access this pointer of outside class
+
+one can just forward declare class inside a class and give it's definition outside. inside Foo - > class Goo;
+cant forward declare nested type until outer class is declared
+
+destructor has same name as that of class just starts with ~ , no return type , no arguements
+a class can have only 1 destructor and it is automatically called when an object is destroyed  // there exists an implicit destructor
+
+program halts like exit dont clean up local variables and don't call any destructors
+
+we don’t need deduction guides for CTAD to work with non-aggregate classes. A matching constructor provides the compiler with the 
+information it needs to deduce the template parameters from the initializers.
+
+NOTE: whenever outside class you'll name the class like FOO<T> but inside the class you can use FOO (example for constructors) -> injected name -> not use of CTAD
+CTAD doesn't work in non-static member defn .... also template fxns are inline by default so even mem fxns defined outside for a template class are inline
+
+a static member of a class is shared by all the instances of the class , they are not associated with class objects
+they exist even if no instance is created and exist from the start to the end of the program
+
+static members are like global variables living in the region of class
+Because static member variables are essentially global variables, you must explicitly define (and optionally initialize) the static member outside of the class, 
+in the global scope.
+if used in muliple files then shoudl be declared as inline in header
+
+A static member may use auto to deduce its type from the initializer, or Class Template Argument Deduction 
+(CTAD) to deduce template type arguments from the initializer.
+
+Non-static members may not use auto or CTAD.
+
+there are also static mem fxns ... can be called without instantiating
+static mem fxns have no this pointer and they can access all static members but no non static members(as they are bound to objects)
+
+if static fxn declared in class then it can be defined globally(but drop the static word, same for static value)
+cpp doesnt suppor static constructor( constructor for initialising static members)
+
+In C++, a friend is a class or function (member or non-member) that has been granted full access to the private and protected members of another class.
+
+non-member friends
+inside class friend void print(Foo& f); declaration of friendship
+outside class print(Foo& f){ cout << f.m_x;}         -> you can also define it while declaration
+this is preferred in the case of operator overloading
+
+if such a frien takes 2 class objects you need to declare them(maybe forward ) before use
+
+you can make an entire class as friend -> friend class Foo;     inside Goo
+but you need the member fxns to use  Goo& for passing the value of Goo object to Foo function
+
+this is also not transitive
+making a member fxn a friend requires it's declaration before, so declare that class before
+
+if I have 2 classes A and B so if B has mem fxn bg and A is a friend of bg then
+Class A;
+Class B{ void bg(const A& obj){}; }
+Class A{ friend void B::bg(const A& obj) ;}
+void B::bg(const A& obj){defn;}
+
+ref - qualifier
+const std::string& getName() const &  { return m_name; } //  & qualifier overloads function to match only lvalue implicit objects, returns by reference
+std::string        getName() const && { return m_name; } // && qualifier overloads function to match only rvalue implicit objects, returns by value
+
+
+
+
+
+
