@@ -1,0 +1,68 @@
+int* ptr{ new int }; // dynamically allocate an integer and assign the address to ptr so we can access it later
+
+to dynamically allocate a single new variable use new keyword
+
+Note that accessing heap-allocated objects is generally slower than accessing stack-allocated objects. Because the compiler knows the 
+address of stack-allocated objects, it can go directly to that address to get a value. Heap allocated objects are typically accessed 
+via pointer. This requires two steps: one to get the address of the object (from the pointer), and another to get the value.
+
+The allocation and deallocation for stack objects is done automatically. There is no need for us to deal with memory addresses -- the code the compiler 
+writes can do this for us.
+
+The allocation and deallocation for heap objects is not done automatically. We need to be involved. That means we need some unambiguous way to refer to 
+a specific heap allocated object, so that we can request its destruction when we’re ready. And the way we reference such objects is via memory address.
+
+int* ptr1{ new int (5) }; // use direct initialization
+int* ptr2{ new int { 6 } }; // use uniform initialization
+
+Deleting a single var // assume ptr has previously been allocated with operator new
+delete ptr; // return the memory pointed to by ptr to the operating system
+ptr = nullptr; // set ptr to be a null pointer
+
+if memory not available
+int* value { new (std::nothrow) int }; // value will be set to a null pointer if the integer allocation fails
+if(!value) { do stuff;}
+
+if memory allocated inside a fxn when the fxn ends the pointer gets deleted but the memory allocated to it just stays
+so reseating or exiting the scope in case of such pointers must be done after freeing the memory
+
+// dynamically allocating arrays
+int* array{ new int[length]{} }; // use array new.  Note that length does not need to be constant or constexpr!  -> length is mostly size_t
+delete[] array;
+works as ptr or decayed array
+
+Note that because this memory is allocated from a different place than the memory used for fixed arrays, the size of the array can be quite large. 
+You can run the program above and allocate an array of length 1,000,000 (or probably even 100,000,000) without issue. Try it! Because of this, programs 
+that need to allocate a lot of memory in C++ typically do so dynamically.
+
+one can also add initialiser in new int[length]{initialiser}
+
+/// Destructorss
+rules written before / avl on site 
+can be called explicitly but generally automatically called when an object is destroyed
+generally used to clean up and free the dynamically allocated space ( or close files , databases n connections)
+
+how practical allocation happens 		m_array = new int[static_cast<std::size_t>(length)]{};
+
+RAII (Resource Acquisition Is Initialization) is a programming technique whereby resource use is tied to the lifetime of objects with automatic
+duration (e.g. non-dynamically allocated objects).
+
+// pointer to a pointer is a pointer that holds the address of another pointer
+int** ptr2;
+note you cannot use && on any object
+
+int** array { new int*[10] }; // allocate an array of 10 int pointers
+
+a way of initialisation
+int x { 7 }; // non-constant
+int (*array)[5] { new int[x][5] }; // rightmost dimension must be constexpr
+parenthesis to tell that we want array to be a pointer to an array of 5 int other wise it will think of it like int* array [5]
+which is an array of size 5's ptr
+
+/// VOID PTR 
+The void pointer, also known as the generic pointer, is a special type of pointer that can be pointed at objects of any data type!
+A void pointer is declared like a normal pointer, using the void keyword as the pointer’s type: void* ptr{};
+
+since it doesn't know what it points to it must be recasted into the necessary poitner type
+If you need to delete a void pointer, static_cast it back to the appropriate type first. since it doesn't know what it is deleting
+

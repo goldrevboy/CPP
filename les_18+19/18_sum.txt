@@ -1,0 +1,11 @@
+for arrays use std::sort(std::begin(arr), std::end(arr))
+
+in std::array arr.data() returns a ptr to the first element of the array
+The erase() function returns an iterator to the element one past the erased element (or end() if the last element was removed)
+
+for std::array  -> .find() iterator to an object first occ , .find_if(all(arr), bool fxn)   fxn takes array data type as argument and returns the occurence which satisfies the condition
+.count() nad .count_if()  to find how many occurences are there
+
+.for_each( iterators , fxn to implement on al vals)  -> accessed in forward seq manner
+
+REVISE STL ::::  https://www.youtube.com/watch?v=2olsGf6JIkU
