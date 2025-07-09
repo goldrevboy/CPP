@@ -11,7 +11,7 @@ public:
     }
 
     // Overloaded int cast
-    int operator int() { return m_cents; }
+    operator int() { return m_cents; }
 
     int getCents() const { return m_cents; }
     void setCents(int cents) { m_cents = cents; }

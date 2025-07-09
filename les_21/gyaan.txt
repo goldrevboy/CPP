@@ -96,3 +96,4 @@ void MyString::deepCopy(const MyString& source) // syntax   ... allocate new mem
 
 MyString& MyString::operator=(const MyString& source)
 { call deepCopy; assign it to this; return *this;}
+

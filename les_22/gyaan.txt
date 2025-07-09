@@ -1,0 +1,90 @@
+A Smart pointer is a composition class that is designed to manage dynamically allocated memory and ensure that memory gets deleted when the smart pointer object 
+goes out of scope. (Relatedly, built-in pointers are sometimes called “dumb pointers” because they can’t clean up after themselves).
+
+Because we haven’t supplied a copy constructor or an assignment operator, C++ provides one for us. And the functions it provides do shallow copies.
+
+What if, instead of having our copy constructor and assignment operator copy the pointer (“copy semantics”), we instead transfer/move ownership of the pointer from the source to the destination object? 
+This is the core idea behind move semantics. Move semantics means the class will transfer ownership of the object rather than making a copy.
+
+types 
+smart pointers: std::unique_ptr, std::weak_ptr, and std::shared_ptr
+
+An r-value reference is a reference that is designed to be initialized with an r-value (only). 
+int&& rref{ 5 }; // r-value reference initialized with r-value 5
+
+cant be initialised by lvalues
+First, r-value references extend the lifespan of the object they are initialized with to the lifespan of the r-value reference (l-value references to const objects 
+can do this too). Second, non-const r-value references allow you to modify the r-value!
+
+R-value references are more often used as function parameters. This is most useful for function overloads when you want to have different behavior for l-value 
+and r-value arguments.
+
+Rvalue reference variables are lvalues
+fun(ref);   ->  calls fun(const int&) not fun(int&&)
+
+Copy constructors are used to initialize a class by making a copy of an object of the same class. Copy assignment is used to copy one class object to another existing 
+class object. By default, C++ will provide a copy constructor and copy assignment operator if one is not explicitly provided. These compiler-provided functions do 
+shallow copies, which may cause problems for classes that allocate dynamic memory. So classes that deal with dynamic memory should override these functions to do 
+deep copies.
+
+defining move assignmemt
+Auto_ptr4& operator=(Auto_ptr4&& a) noexcept{}
+
+defining move constructor
+Auto_ptr4(Auto_ptr4&& a) noexcept
+		: m_ptr { a.m_ptr }
+	{
+		a.m_ptr = nullptr; // we'll talk more about this line below
+	}
+
+passing arg to fxn calls constructor
+
+The move constructor and move assignment are called when those functions have been defined, and the argument for construction or assignment is an rvalue. 
+Most typically, this rvalue will be a literal or temporary value.
+
+The copy constructor and copy assignment are used otherwise (when the argument is an lvalue, or when the argument is an rvalue and the move constructor 
+or move assignment functions aren’t defined).
+
+If you delete the copy constructor, the compiler will not generate an implicit move constructor
+using std::swap in a move constructor makes it go in an infinite loop since it calls the move constructors of the items being swapped
+
+ std::move is a standard library function that casts (using static_cast) its argument into an r-value reference, so that move semantics can be invoked.
+eg T tmp {a}; very a is an lvalue reference leads to calling of copy constructor
+but T tmp {std::move(a)};  converts a to rvalue reference leads to calling of move constructor
+
+when Lvalues are moved their contents are in a "VALID BUT UNSPECIFIED STATE"
+smart pointers shoudl never be dynamically allocated and hence should always be alocated on stack
+
+std::unique_ptr is the C++11 replacement for std::auto_ptr. It should be used to manage any dynamically allocated object that is not shared by multiple 
+objects. That is, std::unique_ptr should completely own the object it manages, not share that ownership with other classes. std::unique_ptr lives in the <memory> header.
+
+std::unique_ptr<Resource> res{ new Resource() };    a smart pointer which deallocates automatically 
+properly implements move semantics   , can use r* and -> pointers
+
+std::make_unique<Foo>(3,4);  constructs an object of the template type and initializes it with the arguments passed into the function.
+srd::make_unique<Foo[]>(4); 4 size array having object Foo
+auto ptr{ std::make_unique<Resource>() };   /// making a unique _ptr using this
+
+note prefer not to pass such pointers by reference as they may get moved and destroyed at the end of fxn call
+.get() to get the raww underlying ptr
+dont assign same block to 2 unique_ptrs and dont delete underlying resource directly(optional)  
+
+
+Unlike std::unique_ptr, which is designed to singly own and manage a resource, std::shared_ptr is meant to solve the case where you need 
+multiple smart pointers co-owning a resource.
+
+even if 1 ptr poitning to the resource it is not deleted but if you destroy all ptrs pointing to the memory location then it deletes the resource
+####  create the 2nd pointer from the 1st one , dont create independently from each other directly from the resource
+
+Much like std::make_unique() can be used to create a std::unique_ptr in C++14, std::make_shared() can (and should) be used to make a std::shared_ptr.
+it internally maintains 2 pointers 1 is the underlying pointer and the other is like a control block
+
+A std::unique_ptr can be converted into a std::shared_ptr via a special std::shared_ptr constructor that accepts a std::unique_ptr r-value. 
+The contents of the std::unique_ptr will be moved to the std::shared_ptr.
+
+circular references stop any data from being freed/ deallocated
+std::weak_ptr was designed to solve the “cyclical ownership”
+it can observe and access the same object as a std::shared_ptr (or other std::weak_ptrs) but it is not considered an owner. Remember, when a std::shared pointer 
+goes out of scope, it only considers whether other std::shared_ptr are co-owning the object. std::weak_ptr does not count!
+
+weak_ptr maintains reference count so when it dangles it can't get a reference count and hence realises it
