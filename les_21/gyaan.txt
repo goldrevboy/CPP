@@ -1,0 +1,98 @@
+you cant overload ?: , :: , . 
+at least on operator must be user defined and you can not create new operators for overloading
+
+overloads that don't modify values should return the result
+if they do they should generally return reference to the left value
+
+////overload using friend fxn
+in the class mention 
+friend Foo operator+(const Foo&a, const Foo& b){ return a.val + b.val;} 
+or just declara it and define it after class
+
+remember non const references cant bind to temporary objects
+normal fxns can be used similar to friend fxns for overloading    ->    but you need a way to fetch privates from class
+
+overloading output stream operators
+std::ostream& operator<< (std::ostream& out, const Point& point);  returns ostream&
+std::istream& operator>> (std::istream& in, const Point& point);   returns istream&
+
+can internally write out << point.x ; (if friend or retrieve using mem fxn otherwise)     // in >> point.x>> point.y; 
+Any time we want our overloaded binary operators to be chainable in such a manner, the left operand should be returned (by reference). 
+
+you can do if(in >> x>>y>>z) to check if the input was valid
+you can impose self contraints , when violated use this -> in.setstate(std::ios_base::failbit);
+
+When overloading an operator using a member function:
+    The overloaded operator must be added as a member function of the left operand.
+    The left operand becomes the implicit *this object
+    All other operands become function parameters.
+
+The assignment (=), subscript ([]), function call (()), and member selection (->) operators must be overloaded as member functions, 
+because the language requires them to be.
+
+cant overload everyoperator as member fxn (eg - << and >>)
+
+// unary ops also generally overloaded as mem fxns
+-p1; is changed to p1.operator-();       unary does return *this;
+Foo operator-(){return Foo{-x}; }
+overload == and != ops always and > and < when you want to ssort 
+reduce redunency by making  != as !(operator==) , define > and ==  , < is just > with flipped operands , >= is !(operator<)
+
+sort by default needs < this operator
+
+overloading a prefix increment or decrement is similar to normal unary operator  .... Remember they return Foo& // return *this;
+
+for postfix c++ has alloweed you to use similar method as prefix but looks for an int parameter in the arguements
+Digit operator++(int); // postfix has an int parameter    just a dummy   make Digit temp{*this}; ++(*this); return temp;
+Digit& operator++(); // prefix has no int parameter
+
+can overload [] for vectors n arrays n stuff -> return reference        // no compulsion to make parameters int
+C++23 allows overload with multiple parameters
+
+const int& operator[] const(int index){return lis[index];}   -> if you define this , it is automatically used for const object
+() operator overload msut be implemented as a member fxn
+double& operator()(int row, int col);
+    double operator()(int row, int col) const; 
+
+Operator() is also commonly overloaded to implement functors (or function object), which are classes that operate like functions. 
+The advantage of a functor over a normal function is that functors can store data in member variables (since they are classes).
+
+typecast can also be overloaded
+operator int() const{return m_cent;}  // dont write return type
+const 
+we can mark them as explicit if we want to prevent implicit use of such casts
+
+    A converting constructor is a member function of class type B that defines how B is created from A.
+    An overloaded typecast is a member function of class type A that defines how A is converted to B.
+    depends on who should get ownership
+    later preferred in case of fundamental types
+
+The purpose of the copy constructor and the copy assignment operator are almost equivalent -- both copy one object to another. 
+However, the copy constructor initializes new objects, whereas the assignment operator replaces the contents of existing objects.
+assignment operator must be overloaded as mem fxn
+
+Fraction& operator= (const Fraction& fraction){ // change num n denom from fraction , return *this;}
+
+f1 = f2 = f3; // chained assignment allowed since reference is returnedcopying assigns memory dynamically
+C++ allowes self assignment f1=f1 (gives issue when dynamically memory is being allocated or deallocated before copying new data)    if (this == &str) return *this;
+
+Unlike other operators, the compiler will provide an implicit public copy assignment operator for your class if you do not provide a user-defined one. 
+This assignment operator does memberwise assignment (which is essentially the same as the memberwise initialization that default copy constructors do).
+if const members then opertor= is defined as deleted
+
+memberwise copy (also known as a shallow copy). This means that C++ copies each member of the class individually (using the assignment operator for overloaded operator=, 
+and direct initialization for the copy constructor). 
+works fine if not dealing with dynamically allocated objects
+
+However, when designing classes that handle dynamically allocated memory, memberwise (shallow) copying can get us in a lot of trouble! This is because shallow copies of 
+a pointer just copy the address of the pointer -- it does not allocate any memory or copy the contents being pointed to!
+when copy gets destryied the original memiry also gets destroyed
+
+One answer to this problem is to do a deep copy on any non-null pointers being copied. A deep copy allocates memory for the copy and then copies the actual value, 
+so that the copy lives in distinct memory from the source. This way, the copy and source are distinct and will not affect each other in any way. 
+Doing deep copies requires that we write our own copy constructors and overloaded assignment operators.
+
+void MyString::deepCopy(const MyString& source) // syntax   ... allocate new memory and copy the contents
+
+MyString& MyString::operator=(const MyString& source)
+{ call deepCopy; assign it to this; return *this;}

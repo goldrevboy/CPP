@@ -1,0 +1,143 @@
+////// FUNCTION POINTER //////
+if you use the fxn name foo without parenthisis then it acts as a fxn ptr 
+to print it's address recast it as void* and then pass to cout .......-> in default it prints 1
+
+// fcnPtr is a pointer to a function that takes no arguments and returns an integer
+int (*fcnPtr)(){&foo};
+to make it const we do int (*const fcnPtr)();  //const before int would say that fxn returns const int
+fcnPtr = &foo; assignment
+C++ will implicitly convert a function into a function pointer if needed (so you don’t need to use the address-of operator (&) to get the function’s address). 
+However, function pointers will not convert to void pointers, or vice-versa ... can be assigned nullptr though
+
+to call fxn using ptr    ->       (*fcnPtr)(5);       // one can also just do fcnPtr(5);   but some very old compilers dont allow this
+
+When the compiler encounters a normal function call to a function with one or more default arguments, it rewrites the function call to include the default arguments. 
+This process happens at compile-time, and thus can only be applied to functions that can be resolved at compile time.
+when a function is called through a function pointer, it is resolved at runtime. In this case, there is no rewriting of the function call to include default arguments
+fxns cant use default arguements (hence can be used to reduce ambiguity)
+
+Functions used as arguments to another function are sometimes called callback functions.
+void selectionSort(int* array, int size, bool (*comparisonFcn)(int, int))
+
+// note for fxn parameters I can also do this  void selectionSort(int* array, int size, bool comparisonFcn(int, int)) <- But in other context this is treated as fwd declaration
+one can also provide default fxns -> void selectionSort(int* array, int size, bool comparisonFcn(int, int)= ascending)
+
+how to make an alias 
+using ValidateFunction = bool(*)(int, int);  now one can just make ValidateFunction ptr; as a pointer
+can also declare them using this ->         std::function<bool(int, int)> fcn  .. present in std::functional
+type deduction 	auto fcnPtr{ &foo };
+
+//////STACK VS HEAP
+memo segment divided into many segments :
+1. code segment (text segment) - > mostly Read only      2. BSS segment(uninitialised data segment) where zero-initialized global and static variables are stored.
+3. The data segment (also called the initialized data segment), where initialized global and static variables are stored.
+4. Heap where dynamically allocated members are stored   5. The call stack, where function parameters, local variables, and other function-related information are stored.
+
+The heap has advantages and disadvantages:
+
+    Allocating memory on the heap is comparatively slow.
+    Allocated memory stays allocated until it is specifically deallocated (beware memory leaks) or the application ends (at which point the OS should clean it up).
+    Dynamically allocated memory must be accessed through a pointer. Dereferencing a pointer is slower than accessing a variable directly.
+    Because the heap is a big pool of memory, large arrays, structures, or classes can be allocated here.
+
+The call stack keeps track of all the active functions (those that have been called but have not yet terminated) from the start of the program to the current 
+point of execution, and handles allocation of all function parameters and local variables.
+
+The call stack segment holds the memory used for the call stack. When the application starts, the main() function is pushed on the call stack by the operating system. 
+Then the program begins executing.
+
+working of call stack :
+    1.  The program encounters a function call.
+    2. A stack frame is constructed and pushed on the stack. The stack frame consists of:
+
+            -The address of the instruction beyond the function call (called the return address). This is how the CPU remembers where to return to after the 
+            called function exits.
+            -All function arguments.
+            -Memory for any local variables
+            -Saved copies of any registers modified by the function that need to be restored when the function returns
+
+    3. The CPU jumps to the function’s start point.
+    4. The instructions inside of the function begin executing.
+
+when the fxn terminates:
+    Registers are restored from the call stack
+    The stack frame is popped off the stack. This frees the memory for all local variables and arguments.
+    The return value is handled.
+    The CPU resumes execution at the return address.
+
+Advantages of Stack :
+    Allocating memory is somewhat faster
+    Memory allocated on the stack stays in scope as long as it is on the stack. It is destroyed when it is popped off the stack.
+    All memory allocated on the stack is known at compile time. Consequently, this memory can be accessed directly through a variable.
+    Because the stack is relatively small, it is generally not a good idea to do anything that eats up lots of stack space. This includes 
+      allocating or copying large arrays or other memory-intensive structures.
+
+STACK grows in a continuous block -> better cache requirement
+// stack doesn't store metadata like heap   , stack has no fragmentation
+
+A tail call is a function call that occurs at the tail (end) of a function. Functions with recursive tail calls are fairly easy for the 
+compiler to optimize into an iterative (non-recursive) function. Such a function would not cause the system to run out of stack space
+
+int main(int argc, char* argv[])    -> to get command line arguments
+argc has the number of arguments  and it will always be atleast 1 as the argv[0] is alway the program name
+
+
+there are certain cases where it can be useful to be able to pass a variable number of parameters to a function. C++ provides a special specifier known 
+as ellipsis (aka “…”) that allow us to do precisely this.
+
+return_type function_name(argument_list, ...)
+The argument_list is one or more normal function parameters. Note that functions that use ellipsis must have at least one non-ellipsis parameter. 
+Any arguments passed to the function must match the argument_list parameters first.
+
+// We access the ellipsis through a va_list, so let's declare one
+    std::va_list list;
+// We initialize the va_list using va_start.  The first argument is
+    // the list to initialize.  The second argument is the last non-ellipsis parameter.
+    va_start(list, count);
+
+to use the element we use va_args(list,type)  -> after giving one element it will automatically give the next when called
+va_end(list) -> for list cleanup
+
+When using ellipsis, the compiler completely suspends type checking for ellipsis parameters.
+ellipsis also don't keep track of the num of argument , you need to do that manually
+
+A lambda expression (also called a lambda or closure) allows us to define an anonymous function inside another function. 
+The nesting is important, as it allows us both to avoid namespace naming pollution, and to define the function as close to where it is used as possible
+
+[ captureClause ] ( parameters ) -> returnType
+{
+    statements;
+}
+// return type can be omitted
+can be used for comparators , find_if without even giving a name 
+sort(all(a), [](int &a, int &b) ->bool{return a>b;}   );
+
+to store a lambda in named variable
+auto lamb1{ [](int i){return i+1;}};
+
+In actuality, lambdas aren’t functions (which is part of how they avoid the limitation of C++ not supporting nested functions). They’re a special 
+kind of object called a functor. Functors are objects that contain an overloaded operator() that make them callable like a function.
+
+one can use int (*fxn){ lambda defn}  // captureClause must be empty orrrrr can use st::function  
+best is use auto
+
+for passing to fxns use rpt(int i , const T& fxn) using templates  // can use std::function and fxn pointers(for nocapture ones)
+
+by C++17 lambdas are implicitly constexpr
+if its has no or all constexpr capture clauses ... and fxn called by lambda must be constexpr
+
+Unlike nested blocks, where any identifier accessible in the outer block is accessible in the nested block, lambdas can only access certain kinds of objects that have been defined outside the lambda. This includes:
+
+    Objects with static (or thread local) storage duration (this includes global variables and static locals)
+    Objects that are constexpr (explicitly or implicitly)
+
+put the variable to be used in capture clause , captures are treated const by default
+when lambda captures a variable it makes a clone of it ... may ormay not have the same type as original
+
+value of a capture is preserved across all calls of lambda , use mutable keyword after fxn to be able to change it
+if captured by refference &varname then changes the original variable
+
+put = in capture this is a default capture and captures all variables used inside the lambda, specy some by reference is allowed
+
+  auto otherCount{ count }; // create a copy of count (with all the captured vairablesn there values n evrything)
+
