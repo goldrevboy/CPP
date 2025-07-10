@@ -1,0 +1,123 @@
+since Derived has a Base part, a more interesting question is whether C++ will let us set a Base pointer or reference to a Derived object. It turns out, we can!
+but from base reference or pointers you can only use those part of the derived class which were in base
+
+A virtual function is a special type of member function that, when called, resolves to the most-derived version of the function for the actual type 
+of the object being referenced or pointed to.
+
+A derived function is considered a match if it has the same signature (name, parameter types, and whether it is const) and return type as the base 
+version of the function. Such functions are called overrides.
+
+example
+class Base
+{
+public:
+    virtual std::string_view getName() const { return "Base"; } // note addition of virtual keyword
+};
+
+class Derived: public Base
+{
+public:
+    virtual std::string_view getName() const { return "Derived"; }    // virtual keyword is optional here 
+};
+
+Note that virtual function resolution only works when a virtual member function is called through a pointer or reference to a class type object. 
+This works because the compiler can differentiate the type of the pointer or reference from the type of the object being pointed to or referenced.
+
+Calling a virtual member function directly on an object (not through a pointer or reference) will always invoke the member function belonging to the 
+same type of that object
+
+polymorphism refers to the ability of an entity to have multiple forms (the term “polymorphism” literally means “many forms”)
+Compile-time polymorphism refers to forms of polymorphism that are resolved by the compiler. These include function overload resolution, as well as template resolution.
+Runtime polymorphism refers to forms of polymorphism that are resolved at runtime. This includes virtual function resolution.
+If a function is virtual, all matching overrides in derived classes are implicitly virtual.
+
+virtual can be declared at any level if not using an overide keyword
+
+ the signature of the derived class function must exactly match the signature of the base class virtual function in order for the derived class function to be used. 
+ If the derived class function has different parameter types, the program will likely still compile fine, but the virtual function will not resolve as intended.
+
+
+Under normal circumstances, the return type of a virtual function and its override must match.
+You should not call virtual functions from constructors or destructors. as derived objects havent been instantiated yet
+
+It is because it’s inefficient -- resolving a virtual function call takes longer than resolving a regular one.
+to make virtual functions work, the compiler has to allocate an extra pointer for each object of a class that has virtual functions. This adds a lot of overhead to objects that otherwise have a small size
+
+/// 
+C++ has two inheritance-related identifiers: override and final. Note that these identifiers are not keywords -- they are normal words that have special meaning only
+ when used in certain contexts. The C++ standard calls them “identifiers with special meaning”, but they are often referred to as “specifiers”.
+
+the override specifier can be applied to any virtual function to tell the compiler to enforce that the function is an override. 
+The override specifier is placed at the end of a member function declaration (in the same place where a function-level const goes). 
+If a member function is const and an override, the const must come before override. -> if you useit for a function which doesn't exist in any upper class then error
+
+in base class use virtual in derived (can exempt virtual and just use overide)  even if a middle class has just override then it can be used to call lower fxns
+
+final keyword used to specify that post this point it the fxn cant be overriden
+final can also be used for classes class Goo final : public Foo ; note no class can now inherit from Goo
+
+although most return types should be same but we can have different return types if they are
+Base * , Derived * respectively as these can be interconverted ... note the final type is the desired one none the less
+
+consider 
+B* b{new B};
+A* a{b};
+delete a;          -> only A's desctructor is called
+if A's destructor is virtual then it calles B's destructor first and then A's
+virtual ~Base() = default; // generate a virtual default destructor
+
+to not call derived fxn in case of virtual just use scope resolution
+“A base class destructor should be either public and virtual, or protected and non-virtual.” 
+A base class with a protected destructor can’t be deleted using a base class pointer, which prevents deleting a derived class object through a base class pointer.
+
+by default destruction happens from bottom layer to top
+
+Function binding (or method binding) is the process that determines what function definition is associated with a function call. 
+The process of actually invoking a bound function is called dispatching.
+
+when a direct call is made to a non-member function or a non-virtual member function, the compiler can determine which function definition should be matched to the call.
+ This is sometimes called early binding (or static binding), as it can be performed at compile-time. The compiler (or linker) can then generate machine language 
+ instructions that tells the CPU to jump directly to the address of the function.
+
+Calls to overloaded functions and function templates can also be resolved at compile-time:
+
+In some cases, a function call can’t be resolved until runtime. In C++, this is sometimes known as late binding 
+(or in the case of virtual function resolution, dynamic dispatch).
+
+However, C++ implementations typically implement virtual functions using a form of late binding known as the virtual table.
+The virtual table is a lookup table of functions used to resolve function calls in a dynamic/late binding manner. The virtual table sometimes goes by other names, 
+such as “vtable”, “virtual function table”, “virtual method table”, or “dispatch table”. In C++, virtual function resolution is sometimes called dynamic dispatch.
+
+First, every class that uses virtual functions (or is derived from a class that uses virtual functions) has a corresponding virtual table. This table is simply a 
+static array that the compiler sets up at compile time. A virtual table contains one entry for each virtual function that can be called by objects of the class. 
+Each entry in this table is simply a function pointer that points to the most-derived function accessible by that class.
+
+Second, the compiler also adds a hidden pointer that is a member of the base class, which we will call *__vptr. *__vptr is set (automatically) when a class object
+ is created so that it points to the virtual table for that class. Unlike the this pointer, which is actually a function parameter used by the compiler to resolve 
+ self-references, *__vptr is a real pointer member. Consequently, it makes each class object allocated bigger by the size of one pointer. It also means that *__vptr 
+ is inherited by derived classes, which is important.
+
+C++ allows you to create a special kind of virtual function called a pure virtual function (or abstract function) that has no body at all! A pure virtual 
+function simply acts as a placeholder that is meant to be redefined by derived classes.
+    virtual int getValue() const = 0; // a pure virtual function,  = 0 means this function is pure virtual
+
+any class with one or more pure virtual functions becomes an abstract base class, which means that it can not be instantiated!
+Any class with pure virtual functions should also have a virtual destructor.
+An interface class is a class that has no member variables, and where all of the functions are pure virtual
+
+diamond problem, the top most class can be instantiated twice 
+share a base class, simply insert the “virtual” keyword in the inheritance list of the derived class. This creates what is called a virtual base class, 
+which means there is only one base object. The base object is shared between all objects in the inheritance tree and it is only constructed once.
+
+the immediate classes dont create this unique base class but the class below them does the lowest in depth.. only time non immediate construction is allowed
+virtual not necessarily abstract
+object slicing when a base class is copy assigned a derived class(not reference but the value)
+
+dynamic_cast that can be used for just this purpose. Although dynamic casts have a few different capabilities, by far the most common 
+use for dynamic casting is for converting base-class pointers into derived-class pointers. This process is called downcasting.
+dynamic_class<Derived*>(base1);
+downcast only works if the underlying classes match
+static_cast does no runtime checks so could be use but wouldnt check for underlying things
+
+cant make operators virtual since they are not member functions
+

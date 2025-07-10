@@ -1,0 +1,32 @@
+template classes work similar to template functions
+
+template<typename T> class A{ T& obj; }
+say you overload [] operator in a new cpp file, and include class in header which is included in both files
+all members of the class need to be instantiated, the [] is not present in main and hence when the classes were made it was never instantiated
+so this will cause a linker error
+
+you can put it in a .inl(inline file) and include it in the bottom of header in header guard
+Explicit template specialization (often shortened to template specialization) is a feature that allows us to explicitly define different 
+implementations of a template for specific types or values
+
+template<>                          // template parameter declaration containing no template parameters
+void print<double>(const double& d)   -> there is a template to print and you are defining specific case for it
+
+can also specify classes like this 
+template <> // the following is a template class with no templated parameters
+class Storage8<bool>   -> original class was template<typename T>class Storage8{};
+Class template specialization
+
+can also specify member function definitions
+template<>
+void Storage<double>::print()
+
+
+Partial template specialization can only be used with classes, not template functions
+what we can do is inherited class from the base using partial template specialization on classes(valid) .... and then override that fxn
+
+similar problem is for pointers .... do not work like 
+// doesn't work
+template<typename T>
+void Storage<T*>::print()   ->    is also partial specialization on fxn as restricts T
+
