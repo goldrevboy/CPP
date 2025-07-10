@@ -1,0 +1,55 @@
+This process of building complex objects from simpler ones is called object composition.
+2 basuc types of object composition : compositino and aggregation
+
+To qualify as a composition, an object and a part must have the following relationship:
+
+    The part (member) is part of the object (class)
+    The part (member) can only belong to one object (class) at a time   // can be traerred but at a time only 1
+    The part (member) has its existence managed by the object (class)
+    The part (member) does not know about the existence of the object (class)
+
+A composition may defer creation of some parts until they are needed.
+A composition may opt to use a part that has been given to it as input rather than create the part itself.
+A composition may delegate destruction of its parts to some other object (e.g. to a garbage collection routine).
+
+To qualify as an aggregation, a whole object and its parts must have the following relationship:
+
+    The part (member) is part of the object (class)
+    The part (member) can (if desired) belong to more than one object (class) at a time
+    The part (member) does not have its existence managed by the object (class)
+    The part (member) does not know about the existence of the object (class)
+
+To qualify as an association, an object and another object must have the following relationship:
+
+    The associated object (member) is otherwise unrelated to the object (class)
+    The associated object (member) can belong to more than one object (class) at a time
+    The associated object (member) does not have its existence managed by the object (class)
+    The associated object (member) may or may not know about the existence of the object (class)
+
+Sometimes objects may have a relationship with other objects of the same type. This is called a reflexive association. eg uni courses
+
+A dependency occurs when one object invokes another object’s functionality in order to accomplish some specific task.
+Similarly, a container class is a class designed to hold and organize multiple instances of another type (either another class, or a fundamental type). 
+most basic functionalities - create empty container - add elements - remove elements -get size  -empty the container   -provide access to stored elements   - maybe sort them 
+
+Value containers are compositions that store copies of the objects that they are holding (and thus are responsible for creating and destroying those copies). 
+Reference containers are aggregations that store pointers or references to other objects (and thus are not responsible for creation or destruction of those objects).
+
+std::copy_n(m_data, elementsToCopy, data); // copy the elements  // start, number, destinatoin
+
+///Class initialization using std::initializer_list
+
+IntArray(std::initializer_list<int> list) // allow IntArray to be initialized via list initialization
+		: IntArray(static_cast<int>(list.size())) // use delegating constructor to set up initial array -> some already existing constructor
+	{
+		// Now initialize our array from the list
+		std::copy(list.begin(), list.end(), m_data);
+	}
+
+list.begin()[index]; to access elements of initializer list
+
+List initialization prefers list constructors over non-list constructors
+IntArray a1(5);   // uses IntArray(int), allocates an array of size 5
+IntArray a2{ 5 }; // uses IntArray<std::initializer_list<int>, allocates array of size 1
+
+can also use std::initializer_list to assign new values to a class by overloading the assignment operator to take a std::initializer_list parameter

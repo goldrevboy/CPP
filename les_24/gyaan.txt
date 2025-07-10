@@ -1,0 +1,84 @@
+n an inheritance (is-a) relationship, the class being inherited from is called the parent class, base class, or superclass, and the class doing the inheriting is 
+called the child class, derived class, or subclass.
+
+class Goo  : public Foo {}    Goo has inherited from Foo      // Goo publically inherits Foo
+
+now a Goo object can access variables n mem fxns of Foo
+It’s possible to inherit from a class that is itself derived from another class.
+
+Because Derived inherits functions and variables from Base, you may assume that the members of Base are copied into Derived. 
+However, this is not true. Instead, we can consider Derived as a two part class: one part Derived, and one part Base.
+
+When C++ constructs derived objects, it does so in phases. First, the most-base class (at the top of the inheritance tree) is constructed. Then each child 
+class is constructed in order, until the most-child class (at the bottom of the inheritance tree) is constructed last.
+
+if the argument passed is double(supported as a derived constructor not a base constructor)
+    Memory for derived is set aside (enough for both the Base and Derived portions)
+    The appropriate Derived constructor is called
+    The Base object is constructed first using the appropriate Base constructor. If no base constructor is specified, the default constructor will be used.
+    The member initializer list initializes variables
+    The body of the constructor executes
+    Control is returned to the caller
+
+Best Idea would be to just make separate constructor in Derived which instantiates base
+However, C++ prevents classes from initializing inherited member variables in the member initializer list of a constructor. 
+In other words, the value of a member variable can only be set in a member initializer list of a constructor belonging to the same class as the variable.
+
+assigning inside constructor body would nto work for const variables
+you can call the Constructor of Base class in the member initializer list
+
+first the immediate upper constructor is called but just after it's initializer list is over before entering the body the upper class constructor is called
+
+derived classes can not access private members of the base class directly
+
+It is worth mentioning that constructors can only call constructors from their immediate parent/base class.
+When a derived class is destroyed, each destructor is called in the reverse order of construction.
+
+The protected access specifier allows the class the member belongs to, friends, and derived classes to access the member. 
+However, protected members are not accessible from outside the class.   // used within the friend or derived class but not accessible thorugh its object outside
+
+Goo goo; cout << goo.m_protected ;   // error can be used within goo not outside
+
+kind of inheritances:
+- public
+- private(default) and protected
+
+In a nutshell, when members are inherited, the access specifier for an inherited member may be changed (in the derived class only) depending on 
+the type of inheritance used. Put another way, members that were public or protected in the base class may change access specifiers in the derived class.
+
+With protected inheritance, the public and protected members become protected, and private members stay inaccessible.
+with PRivate inheritance, the everything is inaccessible
+
+Over riding functions
+When a member function is called on a derived class object, the compiler first looks to see if any function with that name exists in the derived class. 
+If so, all overloaded functions with that name are considered, and the function overload resolution process is used to determine whether there is a best match. 
+If not, the compiler walks up the inheritance chain, checking each parent class in turn in the same way
+
+To have a derived function call a base function of the same name, simply do a normal function call, but prefix the function with the scope qualifier of the base class.4
+do_smtg fxn in Goo calls Foo::do_smtg to implement the fxn of base class in itself
+
+to use operators or friend functions you need to generally give an arguement of type foo &
+so you static_cast<Foo&>(goo)
+using Base::print;  if you use this then all functions from a given base are forward declared and hence would be considered while resolving overloads
+
+C++ gives us the ability to change an inherited member’s access specifier in the derived class. This is done by using a using declaration to identify
+the (scoped) base class member that is having its access changed in the derived class, under the new access specifier.
+
+say there is a protect member in Foo say m_var
+Goo is inherited from Foo ->   in public: of Goo if you declare using Foo::m_var;
+then you can access it in main using goo_object.m_var;
+similarly you can hide functionalities of base class if you put the member in pvt section 
+but one can typecast into higher inherited class where it may or may not be public so using Foo& type cast one can access it.
+	int getValue() const = delete; 
+    can still use type cast or call Foo::getValue() <- if it is accessible there
+
+class Teacher : public Person, public Employee    multiple inheritance
+
+A mixin (also spelled “mix-in”) is a small class that can be inherited from in order to add properties to a class. 
+The name mixin indicates that the class is intended to be mixed into other classes, not instantiated on its own.
+better to use class names for scope in such scenarios
+
+ mixins typically do not use virtual functions 
+
+
+
